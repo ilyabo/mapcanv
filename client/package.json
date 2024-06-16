@@ -10,6 +10,7 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@deck.gl-community/editable-layers": "^9.0.0-alpha.1",
     "@deck.gl/mapbox": "^9.0.19",
     "deck.gl": "^9.0.19",
     "maplibre-gl": "^4.4.0",

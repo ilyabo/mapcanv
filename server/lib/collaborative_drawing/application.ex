@@ -18,7 +18,7 @@ defmodule CollaborativeDrawing.Application do
       # Start to serve requests, typically the last entry
       CollaborativeDrawingWeb.Endpoint,
       # Start the LinesAgent
-      CollaborativeDrawing.LinesAgent
+      CollaborativeDrawing.FeaturesAgent
     ]
 
     # See https://hexdocs.pm/elixir/Supervisor.html

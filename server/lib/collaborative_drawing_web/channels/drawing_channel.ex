@@ -2,18 +2,14 @@ defmodule CollaborativeDrawingWeb.DrawingChannel do
   use CollaborativeDrawingWeb, :channel
 
   @impl true
-  def join("drawing:lobby", payload, socket) do
-    if authorized?(payload) do
-      polygons = CollaborativeDrawing.LinesAgent.get_polygons()
-      {:ok, %{polygons: polygons}, socket}
-    else
-      {:error, %{reason: "unauthorized"}}
-    end
+  def join("drawing:lobby", _payload, socket) do
+    features = CollaborativeDrawing.FeaturesAgent.get_features()
+    {:ok, %{features: features}, socket}
   end
 
   @impl true
-  def handle_in("draw", %{"polygon" => polygon} = payload, socket) do
-    CollaborativeDrawing.LinesAgent.add_polygon(polygon)
+  def handle_in("draw", %{"feature" => feature} = payload, socket) do
+    CollaborativeDrawing.FeaturesAgent.add_feature(feature)
     broadcast(socket, "draw", payload)
     {:noreply, socket}
   end

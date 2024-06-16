@@ -2,51 +2,51 @@
 import create from 'zustand';
 import channel from './socket';
 
-interface Vertex {
-  x: number;
-  y: number;
-}
-
-export interface Polygon {
-  vertices: Vertex[];
+export interface Feature {
+  type: string;
+  geometry: {
+    type: string;
+    coordinates: number[][][];
+  };
+  properties: object;
 }
 
 interface DrawingState {
-  polygons: Polygon[];
+  features: Feature[];
   initialized: boolean;
-  setPolygons: (polygons: Polygon[]) => void;
-  addPolygon: (polygon: Polygon, fromServer?: boolean) => void;
+  setFeatures: (features: Feature[]) => void;
+  addFeature: (feature: Feature, fromServer?: boolean) => void;
   clear: () => void;
   initialize: () => void;
 }
 
 export const useDrawingStore = create<DrawingState>((set, get) => ({
-  polygons: [],
+  features: [],
   initialized: false,
-  setPolygons: (polygons) =>
-    set({polygons: Array.isArray(polygons) ? polygons : []}),
-  addPolygon: (polygon, fromServer = false) => {
-    set((state) => ({polygons: [...state.polygons, polygon]}));
+  setFeatures: (features) =>
+    set({features: Array.isArray(features) ? features : []}),
+  addFeature: (feature, fromServer = false) => {
+    set((state) => ({features: [...state.features, feature]}));
     if (!fromServer) {
-      channel.push('draw', {polygon});
+      channel.push('draw', {feature});
     }
   },
-  clear: () => set({polygons: []}),
+  clear: () => set({features: []}),
   initialize: () => {
     if (get().initialized) return;
     set({initialized: true});
 
     channel
       .join()
-      .receive('ok', ({polygons}) => {
-        set({polygons: Array.isArray(polygons) ? polygons : []});
+      .receive('ok', ({features}) => {
+        set({features: Array.isArray(features) ? features : []});
       })
       .receive('error', ({reason}) => {
         console.error('failed to join', reason);
       });
 
-    channel.on('draw', ({polygon}: {polygon: Polygon}) => {
-      set((state) => ({polygons: [...state.polygons, polygon]}));
+    channel.on('draw', ({feature}: {feature: Feature}) => {
+      set((state) => ({features: [...state.features, feature]}));
     });
   },
 }));
