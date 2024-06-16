@@ -2,48 +2,51 @@
 import create from 'zustand';
 import channel from './socket';
 
-interface Line {
-  x0: number;
-  y0: number;
-  x1: number;
-  y1: number;
+interface Vertex {
+  x: number;
+  y: number;
+}
+
+export interface Polygon {
+  vertices: Vertex[];
 }
 
 interface DrawingState {
-  lines: Line[];
+  polygons: Polygon[];
   initialized: boolean;
-  setLines: (lines: Line[]) => void;
-  addLine: (line: Line, fromServer?: boolean) => void;
+  setPolygons: (polygons: Polygon[]) => void;
+  addPolygon: (polygon: Polygon, fromServer?: boolean) => void;
   clear: () => void;
   initialize: () => void;
 }
 
 export const useDrawingStore = create<DrawingState>((set, get) => ({
-  lines: [],
+  polygons: [],
   initialized: false,
-  setLines: (lines) => set({lines: Array.isArray(lines) ? lines : []}),
-  addLine: (line, fromServer = false) => {
-    set((state) => ({lines: [...state.lines, line]}));
+  setPolygons: (polygons) =>
+    set({polygons: Array.isArray(polygons) ? polygons : []}),
+  addPolygon: (polygon, fromServer = false) => {
+    set((state) => ({polygons: [...state.polygons, polygon]}));
     if (!fromServer) {
-      channel.push('draw', {line});
+      channel.push('draw', {polygon});
     }
   },
-  clear: () => set({lines: []}),
+  clear: () => set({polygons: []}),
   initialize: () => {
     if (get().initialized) return;
     set({initialized: true});
 
     channel
       .join()
-      .receive('ok', ({lines}) => {
-        set({lines: Array.isArray(lines) ? lines : []});
+      .receive('ok', ({polygons}) => {
+        set({polygons: Array.isArray(polygons) ? polygons : []});
       })
       .receive('error', ({reason}) => {
         console.error('failed to join', reason);
       });
 
-    channel.on('draw', ({line}: {line: Line}) => {
-      set((state) => ({lines: [...state.lines, line]}));
+    channel.on('draw', ({polygon}: {polygon: Polygon}) => {
+      set((state) => ({polygons: [...state.polygons, polygon]}));
     });
   },
 }));

@@ -1,12 +1,13 @@
 // src/App.tsx
 import React from 'react';
-import SVGCanvas from './SVGCanvas';
+import {MapView} from './MapView';
+
+import './App.css';
 
 const App: React.FC = () => {
   return (
-    <div className="App">
-      <h1>Collaborative Drawing</h1>
-      <SVGCanvas />
+    <div className="map-container">
+      <MapView />
     </div>
   );
 };
