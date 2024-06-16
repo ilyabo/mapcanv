@@ -2,17 +2,25 @@
 import create from 'zustand';
 import channel from './socket';
 
-export interface Feature {
+interface Vertex {
+  x: number;
+  y: number;
+}
+
+interface Feature {
   type: string;
   geometry: {
     type: string;
     coordinates: number[][][];
   };
-  properties: object;
+  properties: {
+    color: string;
+  };
 }
 
 interface DrawingState {
   features: Feature[];
+  hue: number | null;
   initialized: boolean;
   setFeatures: (features: Feature[]) => void;
   addFeature: (feature: Feature, fromServer?: boolean) => void;
@@ -22,6 +30,7 @@ interface DrawingState {
 
 export const useDrawingStore = create<DrawingState>((set, get) => ({
   features: [],
+  hue: null,
   initialized: false,
   setFeatures: (features) =>
     set({features: Array.isArray(features) ? features : []}),
@@ -38,8 +47,8 @@ export const useDrawingStore = create<DrawingState>((set, get) => ({
 
     channel
       .join()
-      .receive('ok', ({features}) => {
-        set({features: Array.isArray(features) ? features : []});
+      .receive('ok', ({features, hue}) => {
+        set({features: Array.isArray(features) ? features : [], hue});
       })
       .receive('error', ({reason}) => {
         console.error('failed to join', reason);

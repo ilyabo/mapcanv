@@ -4,7 +4,8 @@ defmodule CollaborativeDrawingWeb.DrawingChannel do
   @impl true
   def join("drawing:lobby", _payload, socket) do
     features = CollaborativeDrawing.FeaturesAgent.get_features()
-    {:ok, %{features: features}, socket}
+    client_hue = Enum.random(0..360)
+    {:ok, %{features: features, hue: client_hue}, assign(socket, :hue, client_hue)}
   end
 
   @impl true
@@ -35,4 +36,6 @@ defmodule CollaborativeDrawingWeb.DrawingChannel do
   defp authorized?(_payload) do
     true
   end
+
+
 end
