@@ -5,7 +5,8 @@ import {
 import {PolygonLayer} from 'deck.gl';
 import 'maplibre-gl/dist/maplibre-gl.css';
 import {FC, useEffect, useState} from 'react';
-import {Map, useControl} from 'react-map-gl/maplibre';
+import {Map as ReactMapGl, useControl} from 'react-map-gl/maplibre';
+import {Map} from 'maplibre-gl';
 import {Polygon, useDrawingStore} from './store';
 
 const INITIAL_VIEW_STATE = {
@@ -14,7 +15,7 @@ const INITIAL_VIEW_STATE = {
   zoom: 1,
   bearing: 0,
   pitch: 0,
-  minZoom: 1,
+  minZoom: 1.5,
 };
 
 const MAP_STYLE =
@@ -24,8 +25,12 @@ const DOUBLE_CLICK_DELAY = 250; // Adjust the delay for double-click detection
 
 function DeckGLOverlay(props: MapboxOverlayProps): null {
   const overlay = useControl(({map}) => {
-    const mapInstance = map.getMap();
+    const mapInstance = map.getMap() as Map;
     mapInstance.doubleClickZoom.disable();
+    mapInstance.dragRotate.disable();
+    mapInstance.touchZoomRotate.disable();
+    mapInstance.touchPitch.disable();
+    mapInstance.boxZoom.disable();
     return new DeckOverlay(props);
   });
   overlay.setProps(props);
@@ -87,6 +92,9 @@ export const MapView: FC = () => {
       getFillColor: [160, 160, 180, 200],
       getLineColor: [0, 0, 0, 255],
       lineWidthMinPixels: 2,
+      parameters: {
+        depthTest: false,
+      },
     }),
     // new GeoJsonLayer({
     //   id: 'airports',
@@ -106,9 +114,13 @@ export const MapView: FC = () => {
   ];
 
   return (
-    <Map initialViewState={INITIAL_VIEW_STATE} mapStyle={MAP_STYLE}>
+    <ReactMapGl
+      initialViewState={INITIAL_VIEW_STATE}
+      mapStyle={MAP_STYLE}
+      antialias
+    >
       <DeckGLOverlay layers={layers} interleaved onClick={handleClick} />
       {/* <NavigationControl position="top-left" /> */}
-    </Map>
+    </ReactMapGl>
   );
 };
