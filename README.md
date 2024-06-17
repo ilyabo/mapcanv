@@ -1,5 +1,15 @@
 # CollaborativeDrawing
 
+A collaborative map drawing app built using the [Phoenix Framework](https://phoenixframework.org/) and [deck.gl](http://deck.gl).
+
+[LIVE DEMO](https://collaborative-drawing.fly.dev) – Try opening in two browser windows
+
+[<img width=500 src=https://github.com/ilyabo/collaborative_drawing/assets/351828/222103b5-18c6-4a1c-938f-e7d94d2994aa>](https://collaborative-drawing.fly.dev)
+
+
+
+# Running locally
+
 To start your Phoenix server:
 
 - Run `mix setup` to install and setup dependencies
@@ -7,12 +17,7 @@ To start your Phoenix server:
 
 Now you can visit [`localhost:4000`](http://localhost:4000) from your browser.
 
-Ready to run in production? Please [check our deployment guides](https://hexdocs.pm/phoenix/deployment.html).
 
-## Learn more
+# Deploying
 
-- Official website: https://www.phoenixframework.org/
-- Guides: https://hexdocs.pm/phoenix/overview.html
-- Docs: https://hexdocs.pm/phoenix
-- Forum: https://elixirforum.com/c/phoenix-forum
-- Source: https://github.com/phoenixframework/phoenix
+Check [Phoenix deployment guides](https://hexdocs.pm/phoenix/deployment.html).
