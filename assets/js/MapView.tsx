@@ -103,8 +103,13 @@ export const MapView: FC = () => {
       initialViewState={INITIAL_VIEW_STATE}
       mapStyle={MAP_STYLE}
       antialias
+      cursor="default"
     >
-      <DeckGLOverlay layers={layers} interleaved />
+      <DeckGLOverlay
+        layers={layers}
+        getCursor={() => 'crosshair'}
+        interleaved
+      />
     </ReactMapGl>
   );
 };

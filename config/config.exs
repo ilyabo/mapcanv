@@ -35,6 +35,8 @@ config :esbuild,
   version: "0.17.11",
   collaborative_drawing: [
     args:
+      # TODO: target es2022 might be too high for some browsers, consider changing it to es2017
+      #       es2022 was chosen to avoid loader.gl build errors
       ~w(js/app.js --loader:.js=jsx --bundle --target=es2022 --outdir=../priv/static/assets --external:/fonts/* --external:/images/*),
     cd: Path.expand("../assets", __DIR__),
     env: %{"NODE_PATH" => Path.expand("../deps", __DIR__)}

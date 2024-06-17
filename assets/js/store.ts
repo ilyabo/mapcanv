@@ -1,6 +1,6 @@
 // src/store.ts
 import {create} from 'zustand';
-import channel from './socket';
+import {channel} from './user_socket';
 
 interface Vertex {
   x: number;
