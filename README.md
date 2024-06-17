@@ -1,5 +1,8 @@
 # CollaborativeDrawing
 
+![image](https://github.com/ilyabo/collaborative_drawing/assets/351828/222103b5-18c6-4a1c-938f-e7d94d2994aa)
+
+
 To start your Phoenix server:
 
 - Run `mix setup` to install and setup dependencies
