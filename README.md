@@ -1,7 +1,12 @@
 # CollaborativeDrawing
 
-![image](https://github.com/ilyabo/collaborative_drawing/assets/351828/222103b5-18c6-4a1c-938f-e7d94d2994aa)
+A collaborative map drawing app built using the [Phoenix Framework](https://phoenixframework.org/) and [deck.gl](http://deck.gl).
 
+<img width=500 src=https://github.com/ilyabo/collaborative_drawing/assets/351828/222103b5-18c6-4a1c-938f-e7d94d2994aa>
+
+
+
+# Running locally
 
 To start your Phoenix server:
 
@@ -12,10 +17,7 @@ Now you can visit [`localhost:4000`](http://localhost:4000) from your browser.
 
 Ready to run in production? Please [check our deployment guides](https://hexdocs.pm/phoenix/deployment.html).
 
-## Learn more
 
-- Official website: https://www.phoenixframework.org/
-- Guides: https://hexdocs.pm/phoenix/overview.html
-- Docs: https://hexdocs.pm/phoenix
-- Forum: https://elixirforum.com/c/phoenix-forum
-- Source: https://github.com/phoenixframework/phoenix
+# Deploying on Fly.io
+
+Refer to [this documentation](https://hexdocs.pm/phoenix/fly.html).
