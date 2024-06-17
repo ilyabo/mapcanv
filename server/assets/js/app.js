@@ -46,7 +46,7 @@ window.liveSocket = liveSocket;
 
 import React from 'react';
 import {createRoot} from 'react-dom/client';
-import ReactHello from './react_hello';
-const hello = document.getElementById('hello');
-const root = createRoot(hello);
-root.render(<ReactHello name="Phoenix" />);
+import App from './App';
+const reactAppContainer = document.getElementById('react-app-container');
+const root = createRoot(reactAppContainer);
+root.render(<App />);

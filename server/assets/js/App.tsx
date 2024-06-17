@@ -2,11 +2,16 @@
 import React from 'react';
 import {MapView} from './MapView';
 
-import './App.css';
-
 const App: React.FC = () => {
   return (
-    <div className="map-container">
+    <div
+      className="map-container absolute inset-0"
+      style={{
+        position: 'absolute',
+        width: '100%',
+        height: '100%',
+      }}
+    >
       <MapView />
     </div>
   );
