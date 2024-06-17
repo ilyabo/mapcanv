@@ -21,13 +21,17 @@ ARG RUNNER_IMAGE="debian:${DEBIAN_VERSION}"
 FROM ${BUILDER_IMAGE} as builder
 
 # install build dependencies
-RUN apt-get update -y && apt-get install -y build-essential git nodejs \
+RUN apt-get update -y && apt-get install -y build-essential git curl \
     && apt-get clean && rm -f /var/lib/apt/lists/*_*
 
+# Install Node.js 20.x
+RUN curl -fsSL https://deb.nodesource.com/setup_20.x -o nodesource_setup.sh
+RUN bash nodesource_setup.sh
+RUN apt-get install -y nodejs
+
 # Install Yarn
-RUN curl -sS https://dl.yarnpkg.com/debian/pubkey.gpg | apt-key add - \
-    && echo "deb https://dl.yarnpkg.com/debian/ stable main" | tee /etc/apt/sources.list.d/yarn.list \
-    && apt-get update && apt-get install -y yarn
+RUN npm install -g yarn
+
 
 # prepare build dir
 WORKDIR /app
