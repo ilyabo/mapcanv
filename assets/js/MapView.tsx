@@ -1,16 +1,19 @@
 import {
   DrawPolygonMode,
+  ViewMode,
+  ModifyMode,
   EditableGeoJsonLayer,
 } from '@deck.gl-community/editable-layers';
+import {cellToBoundary, latLngToCell} from 'h3-js';
 import {
   MapboxOverlay as DeckOverlay,
   MapboxOverlayProps,
 } from '@deck.gl/mapbox';
 import {Map} from 'maplibre-gl';
-import 'maplibre-gl/dist/maplibre-gl.css';
-import React, {FC, useEffect, useState} from 'react';
+// import 'maplibre-gl/dist/maplibre-gl.css';
+import React, {FC, useCallback, useEffect, useState} from 'react';
 import {Map as ReactMapGl, useControl} from 'react-map-gl/maplibre';
-import {useDrawingStore} from './store';
+import {DrawingMode, useAppStore} from './store';
 import {hslToRgbA} from './utils';
 
 const INITIAL_VIEW_STATE = {
@@ -40,7 +43,9 @@ function DeckGLOverlay(props: MapboxOverlayProps): null {
 }
 
 export const MapView: FC = () => {
-  const {features, addFeature, initialize, clientColor} = useDrawingStore(
+  const drawingMode = useAppStore((state) => state.mode);
+
+  const {features, addFeature, initialize, clientColor} = useAppStore(
     (state) => ({
       features: state.features,
       addFeature: state.addFeature,
@@ -68,7 +73,12 @@ export const MapView: FC = () => {
     new EditableGeoJsonLayer({
       id: 'editable-geojson-layer',
       data: drawPolygons,
-      mode: DrawPolygonMode,
+      mode:
+        drawingMode === DrawingMode.DRAW_POLYGON
+          ? DrawPolygonMode
+          : drawingMode === DrawingMode.DRAW_HEXAGON
+          ? ViewMode
+          : ViewMode,
       selectedFeatureIndexes: [],
       pickable: true,
 
@@ -97,6 +107,52 @@ export const MapView: FC = () => {
           : [0, 0, 0, 255],
     }),
   ];
+  // console.log(features);
+
+  const handleClick = useCallback(
+    (event) => {
+      if (drawingMode === DrawingMode.DRAW_HEXAGON) {
+        const [lng, lat] = event.coordinate;
+        const h3 = latLngToCell(lat, lng, Math.max(6, event.viewport.zoom - 2));
+        const boundary = cellToBoundary(h3, true);
+        addFeature({
+          type: 'Feature',
+          geometry: {
+            type: 'Polygon',
+            coordinates: [boundary],
+          },
+          properties: {
+            color: clientColor,
+          },
+        });
+      }
+    },
+    [addFeature, drawingMode, clientColor]
+  );
+
+  // const handleDrag = useCallback(
+  //   (event) => {
+  //     if (drawingMode === DrawingMode.DRAW_HEXAGON) {
+  //       const [lng, lat] = event.coordinate;
+  //       const h3 = latLngToCell(lat, lng, Math.max(6, event.viewport.zoom - 3));
+  //       const boundary = cellToBoundary(h3, true);
+  //       addFeature({
+  //         type: 'Feature',
+  //         geometry: {
+  //           type: 'Polygon',
+  //           coordinates: [boundary],
+  //         },
+  //         properties: {
+  //           color: clientColor,
+  //         },
+  //       });
+  //       console.log(event);
+  //       return false;
+  //       //event.preventDefault();
+  //     }
+  //   },
+  //   [addFeature, drawingMode, clientColor]
+  // );
 
   return (
     <ReactMapGl
@@ -108,6 +164,8 @@ export const MapView: FC = () => {
       <DeckGLOverlay
         layers={layers}
         getCursor={() => 'crosshair'}
+        onClick={handleClick}
+        // onDrag={handleDrag}
         interleaved
       />
     </ReactMapGl>

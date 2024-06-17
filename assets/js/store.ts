@@ -2,11 +2,6 @@
 import {create} from 'zustand';
 import {channel} from './user_socket';
 
-interface Vertex {
-  x: number;
-  y: number;
-}
-
 interface Feature {
   type: string;
   geometry: {
@@ -18,6 +13,13 @@ interface Feature {
   };
 }
 
+export enum DrawingMode {
+  DRAW_HEXAGON = 'H3 Hexagons',
+  DRAW_POLYGON = 'Polygons',
+  // MODIFY = 'Modify',
+  VIEWING = 'Viewing',
+}
+
 interface DrawingState {
   features: Feature[];
   hue: number | null;
@@ -26,12 +28,16 @@ interface DrawingState {
   addFeature: (feature: Feature, fromServer?: boolean) => void;
   clear: () => void;
   initialize: () => void;
+  mode: DrawingMode;
+  setDrawingMode: (mode: DrawingMode) => void;
 }
 
-export const useDrawingStore = create<DrawingState>((set, get) => ({
+export const useAppStore = create<DrawingState>((set, get) => ({
   features: [],
   hue: null,
   initialized: false,
+  mode: DrawingMode.DRAW_HEXAGON,
+  setDrawingMode: (mode) => set({mode}),
   setFeatures: (features) =>
     set({features: Array.isArray(features) ? features : []}),
   addFeature: (feature, fromServer = false) => {
