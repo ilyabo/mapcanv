@@ -2,7 +2,9 @@
 
 A collaborative map drawing app built using the [Phoenix Framework](https://phoenixframework.org/) and [deck.gl](http://deck.gl).
 
-<img width=500 src=https://github.com/ilyabo/collaborative_drawing/assets/351828/222103b5-18c6-4a1c-938f-e7d94d2994aa>
+[TRY LIVE](https://collaborative-drawing.fly.dev)
+
+[<img width=500 src=https://github.com/ilyabo/collaborative_drawing/assets/351828/222103b5-18c6-4a1c-938f-e7d94d2994aa>](https://collaborative-drawing.fly.dev)
 
 
 
