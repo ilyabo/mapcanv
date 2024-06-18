@@ -42,10 +42,7 @@ export const useAppStore = create<DrawingState>((set, get) => ({
   mode: DrawingMode.DRAW_HEXAGON,
   hexResolution: 10,
   setColor: (color) => set({color}),
-  setHexResolution: (resolution) => {
-    console.log('setting resolution', resolution);
-    return set({hexResolution: resolution});
-  },
+  setHexResolution: (resolution) => set({hexResolution: resolution}),
   setDrawingMode: (mode) => set({mode}),
   setFeatures: (features) =>
     set({features: Array.isArray(features) ? features : []}),
@@ -59,7 +56,6 @@ export const useAppStore = create<DrawingState>((set, get) => ({
   initialize: () => {
     if (get().initialized) return;
     set({initialized: true});
-
     channel
       .join()
       .receive('ok', ({features}) => {
