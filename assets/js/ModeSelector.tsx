@@ -17,7 +17,6 @@ export type ModeSelectorProps = {};
 const KEYSTROKES_BY_MODE = {
   [DrawingMode.DRAW_POLYGON]: 'p',
   [DrawingMode.DRAW_HEXAGON]: 'h',
-  [DrawingMode.VIEWING]: 'v',
 };
 
 export const ModeSelector: FC<ModeSelectorProps> = (props) => {
@@ -64,6 +63,11 @@ export const ModeSelector: FC<ModeSelectorProps> = (props) => {
             </DropdownMenuItem>
           ))}
         </DropdownMenuGroup>
+
+        <DropdownMenuItem disabled>
+          Pan the map
+          <DropdownMenuShortcut>Hold Space</DropdownMenuShortcut>
+        </DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>
   );

@@ -17,7 +17,6 @@ export enum DrawingMode {
   DRAW_HEXAGON = 'H3 Hexagons',
   DRAW_POLYGON = 'Polygons',
   // MODIFY = 'Modify',
-  VIEWING = 'Viewing',
 }
 
 interface DrawingState {
