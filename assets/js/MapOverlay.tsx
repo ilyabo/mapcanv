@@ -11,7 +11,7 @@ import {cellToBoundary, latLngToCell} from 'h3-js';
 import {FC} from 'react';
 import {Map} from 'maplibre-gl';
 import React, {useCallback, useEffect, useState} from 'react';
-import {useControl} from 'react-map-gl/maplibre';
+import {useControl, useMap} from 'react-map-gl/maplibre';
 import {DrawingMode, useAppStore} from './store';
 import {hslToRgbA} from './utils';
 
@@ -20,6 +20,7 @@ export type MapOverlayProps = {};
 function DeckGLOverlay(props: MapboxOverlayProps): null {
   const overlay = useControl(({map}) => {
     const mapInstance = map.getMap() as Map;
+    mapInstance?.dragPan.disable();
     mapInstance.doubleClickZoom.disable();
     mapInstance.dragRotate.disable();
     mapInstance.touchPitch.disable();
@@ -31,9 +32,10 @@ function DeckGLOverlay(props: MapboxOverlayProps): null {
 }
 
 export const MapOverlay: FC<MapOverlayProps> = (props) => {
-  const {} = props;
-
+  const map = useMap();
+  const mapInstance = map.current?.getMap();
   const drawingMode = useAppStore((state) => state.mode);
+  const [isPanning, setIsPanning] = useState(false);
 
   const {features, addFeature, initialize, clientColor} = useAppStore(
     (state) => ({
@@ -44,6 +46,28 @@ export const MapOverlay: FC<MapOverlayProps> = (props) => {
     })
   );
 
+  // add space keyboard event listener
+  useEffect(() => {
+    const onKeyDown = (evt) => {
+      if (evt.key === ' ') {
+        mapInstance?.dragPan.enable();
+        setIsPanning(true);
+      }
+    };
+    const onKeyUp = (evt) => {
+      if (evt.key === ' ') {
+        mapInstance?.dragPan.disable();
+        setIsPanning(false);
+      }
+    };
+    window.addEventListener('keydown', onKeyDown);
+    window.addEventListener('keyup', onKeyUp);
+    return () => {
+      window.removeEventListener('keydown', onKeyDown);
+      window.removeEventListener('keyup', onKeyUp);
+    };
+  }, []);
+
   useEffect(() => {
     initialize();
   }, [initialize]);
@@ -53,6 +77,12 @@ export const MapOverlay: FC<MapOverlayProps> = (props) => {
       features: features,
     });
   }, [features]);
+  useEffect(() => {
+    if (drawingMode === DrawingMode.DRAW_HEXAGON) {
+    } else {
+      mapInstance?.dragPan.enable();
+    }
+  }, [drawingMode, mapInstance]);
 
   const [drawPolygons, setDrawPolygons] = useState({
     type: 'FeatureCollection',
@@ -99,57 +129,51 @@ export const MapOverlay: FC<MapOverlayProps> = (props) => {
   ];
   // console.log(features);
 
-  const handleClick = useCallback(
+  const handleAddHexagon = useCallback(
     (event) => {
-      if (drawingMode === DrawingMode.DRAW_HEXAGON) {
-        const [lng, lat] = event.coordinate;
-        const h3 = latLngToCell(lat, lng, Math.max(6, event.viewport.zoom - 2));
-        const boundary = cellToBoundary(h3, true);
-        addFeature({
-          type: 'Feature',
-          geometry: {
-            type: 'Polygon',
-            coordinates: [boundary],
-          },
-          properties: {
-            color: clientColor,
-          },
-        });
-      }
+      const [lng, lat] = event.coordinate;
+      const h3 = latLngToCell(lat, lng, Math.max(6, event.viewport.zoom - 2));
+      const boundary = cellToBoundary(h3, true);
+      addFeature({
+        type: 'Feature',
+        geometry: {
+          type: 'Polygon',
+          coordinates: [boundary],
+        },
+        properties: {
+          color: clientColor,
+        },
+      });
     },
-    [addFeature, drawingMode, clientColor]
+    [addFeature, clientColor]
   );
 
-  // const handleDrag = useCallback(
-  //   (event) => {
-  //     if (drawingMode === DrawingMode.DRAW_HEXAGON) {
-  //       const [lng, lat] = event.coordinate;
-  //       const h3 = latLngToCell(lat, lng, Math.max(6, event.viewport.zoom - 3));
-  //       const boundary = cellToBoundary(h3, true);
-  //       addFeature({
-  //         type: 'Feature',
-  //         geometry: {
-  //           type: 'Polygon',
-  //           coordinates: [boundary],
-  //         },
-  //         properties: {
-  //           color: clientColor,
-  //         },
-  //       });
-  //       console.log(event);
-  //       return false;
-  //       //event.preventDefault();
-  //     }
-  //   },
-  //   [addFeature, drawingMode, clientColor]
-  // );
+  const handleClick = useCallback(
+    (event) => {
+      if (isPanning) return;
+      if (drawingMode === DrawingMode.DRAW_HEXAGON) {
+        handleAddHexagon(event);
+      }
+    },
+    [drawingMode, isPanning]
+  );
+
+  const handleDrag = useCallback(
+    (event) => {
+      if (isPanning) return;
+      if (drawingMode === DrawingMode.DRAW_HEXAGON) {
+        handleAddHexagon(event);
+      }
+    },
+    [drawingMode, isPanning]
+  );
 
   return (
     <DeckGLOverlay
       layers={layers}
-      getCursor={() => 'crosshair'}
+      getCursor={() => (isPanning ? 'grab' : 'crosshair')}
       onClick={handleClick}
-      // onDrag={handleDrag}
+      onDrag={handleDrag}
       interleaved
     />
   );
