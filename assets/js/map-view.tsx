@@ -122,10 +122,12 @@ export const MapView: FC = () => {
 
       getFillColor: (f) =>
         f.properties.color ? colorToRGBA(f.properties.color) : defaultColor,
-      getLineColor: (f) =>
-        f.properties.color
-          ? colorToRGBA(f.properties.color, {darker: -0.2})
-          : defaultColor,
+      stroked: false,
+      filled: true,
+      // getLineColor: (f) =>
+      //   f.properties.color
+      //     ? colorToRGBA(f.properties.color, {darker: -0.2})
+      //     : defaultColor,
     }),
   ];
   // console.log(features);
