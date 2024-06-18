@@ -7,6 +7,7 @@
     "@radix-ui/react-slot": "^1.0.2",
     "class-variance-authority": "^0.7.0",
     "clsx": "^2.1.1",
+    "d3": "^7.9.0",
     "deck.gl": "^9.0.19",
     "h3-js": "^4.1.0",
     "maplibre-gl": "^4.4.0",
@@ -20,6 +21,7 @@
     "zustand": "^4.5.2"
   },
   "devDependencies": {
+    "@types/d3": "^7.4.3",
     "@types/react": "^18.3.3",
     "@types/react-dom": "^18.3.0"
   }

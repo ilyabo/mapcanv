@@ -1,7 +1,7 @@
 // src/App.tsx
 import React from 'react';
 import {MapView} from './MapView';
-import {ModeSelector} from './ModeSelector';
+import {Menu} from './Menu';
 
 const App: React.FC = () => {
   return (
@@ -23,7 +23,7 @@ const App: React.FC = () => {
           left: 20,
         }}
       >
-        <ModeSelector />
+        <Menu />
       </div>
     </>
   );

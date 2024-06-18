@@ -1,6 +1,7 @@
 // src/store.ts
 import {create} from 'zustand';
 import {channel} from './user_socket';
+import {interpolateRainbow} from 'd3';
 
 interface Feature {
   type: string;
@@ -21,7 +22,7 @@ export enum DrawingMode {
 
 interface DrawingState {
   features: Feature[];
-  hue: number | null;
+  color: string;
   initialized: boolean;
   setFeatures: (features: Feature[]) => void;
   addFeature: (feature: Feature, fromServer?: boolean) => void;
@@ -33,7 +34,7 @@ interface DrawingState {
 
 export const useAppStore = create<DrawingState>((set, get) => ({
   features: [],
-  hue: null,
+  color: interpolateRainbow(Math.random()),
   initialized: false,
   mode: DrawingMode.DRAW_HEXAGON,
   setDrawingMode: (mode) => set({mode}),
@@ -52,8 +53,8 @@ export const useAppStore = create<DrawingState>((set, get) => ({
 
     channel
       .join()
-      .receive('ok', ({features, hue}) => {
-        set({features: Array.isArray(features) ? features : [], hue});
+      .receive('ok', ({features}) => {
+        set({features: Array.isArray(features) ? features : []});
       })
       .receive('error', ({reason}) => {
         console.error('failed to join', reason);

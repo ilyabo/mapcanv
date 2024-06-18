@@ -8,12 +8,13 @@ import {
   MapboxOverlayProps,
 } from '@deck.gl/mapbox';
 import {cellToBoundary, latLngToCell} from 'h3-js';
-import {FC} from 'react';
+import {FC, useMemo} from 'react';
 import {Map} from 'maplibre-gl';
 import React, {useCallback, useEffect, useState} from 'react';
 import {useControl, useMap} from 'react-map-gl/maplibre';
 import {DrawingMode, useAppStore} from './store';
-import {hslToRgbA} from './utils';
+import {colorToRGBA} from './utils';
+import {rgb} from 'd3';
 
 export type MapOverlayProps = {};
 
@@ -36,15 +37,14 @@ export const MapOverlay: FC<MapOverlayProps> = (props) => {
   const mapInstance = map.current?.getMap();
   const drawingMode = useAppStore((state) => state.mode);
   const [isPanning, setIsPanning] = useState(false);
+  const color = useAppStore((state) => state.color);
+  const colorRGB = useMemo(() => colorToRGBA(color), [color]);
 
-  const {features, addFeature, initialize, clientColor} = useAppStore(
-    (state) => ({
-      features: state.features,
-      addFeature: state.addFeature,
-      initialize: state.initialize,
-      clientColor: `hsl(${state.hue}, ${80}%, ${60}%)`,
-    })
-  );
+  const {features, addFeature, initialize} = useAppStore((state) => ({
+    features: state.features,
+    addFeature: state.addFeature,
+    initialize: state.initialize,
+  }));
 
   // add space keyboard event listener
   useEffect(() => {
@@ -72,10 +72,7 @@ export const MapOverlay: FC<MapOverlayProps> = (props) => {
     initialize();
   }, [initialize]);
   useEffect(() => {
-    setDrawPolygons({
-      type: 'FeatureCollection',
-      features: features,
-    });
+    setDrawPolygons({type: 'FeatureCollection', features: features});
   }, [features]);
   useEffect(() => {
     if (drawingMode === DrawingMode.DRAW_HEXAGON) {
@@ -109,22 +106,16 @@ export const MapOverlay: FC<MapOverlayProps> = (props) => {
           if (featureIndexes.length > 0) {
             addFeature({
               ...updatedData.features[featureIndexes[0]],
-              properties: {
-                color: clientColor,
-              },
+              properties: {color},
             });
           }
         }
       },
 
-      getFillColor: (f, isSelected, mode) =>
-        f.properties.color
-          ? hslToRgbA(f.properties.color, 0.8)
-          : [160, 160, 180, 200],
-      getLineColor: (f, isSelected, mode) =>
-        f.properties.color
-          ? hslToRgbA(f.properties.color, 1.0)
-          : [0, 0, 0, 255],
+      getFillColor: (f) =>
+        f.properties.color ? colorToRGBA(f.properties.color) : colorRGB,
+      getLineColor: (f) =>
+        f.properties.color ? colorToRGBA(f.properties.color) : colorRGB,
     }),
   ];
   // console.log(features);
@@ -140,12 +131,10 @@ export const MapOverlay: FC<MapOverlayProps> = (props) => {
           type: 'Polygon',
           coordinates: [boundary],
         },
-        properties: {
-          color: clientColor,
-        },
+        properties: {color},
       });
     },
-    [addFeature, clientColor]
+    [addFeature, color]
   );
 
   const handleClick = useCallback(

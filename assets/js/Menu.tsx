@@ -19,7 +19,7 @@ const KEYSTROKES_BY_MODE = {
   [DrawingMode.DRAW_HEXAGON]: 'h',
 };
 
-export const ModeSelector: FC<ModeSelectorProps> = (props) => {
+export const Menu: FC<ModeSelectorProps> = (props) => {
   const drawingMode = useAppStore((state) => state.mode);
   const setDrawingMode = useAppStore((state) => state.setDrawingMode);
 
@@ -63,10 +63,10 @@ export const ModeSelector: FC<ModeSelectorProps> = (props) => {
             </DropdownMenuItem>
           ))}
         </DropdownMenuGroup>
-
+        <DropdownMenuSeparator />
         <DropdownMenuItem disabled>
           Pan the map
-          <DropdownMenuShortcut>Hold Space</DropdownMenuShortcut>
+          <DropdownMenuShortcut>Space + Drag</DropdownMenuShortcut>
         </DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>
