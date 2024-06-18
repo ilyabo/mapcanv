@@ -2,6 +2,8 @@
 @import 'tailwindcss/components';
 @import 'tailwindcss/utilities';
 
+@import 'maplibre-gl/dist/maplibre-gl.css';
+
 /* This file is for your main application CSS */
 @layer base {
   :root {
