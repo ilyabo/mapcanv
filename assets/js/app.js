@@ -46,7 +46,7 @@ window.liveSocket = liveSocket;
 
 import React from 'react';
 import {createRoot} from 'react-dom/client';
-import App from './App';
+import AppRoot from './app-root';
 const reactAppContainer = document.getElementById('react-app-container');
 const root = createRoot(reactAppContainer);
-root.render(<App />);
+root.render(<AppRoot />);

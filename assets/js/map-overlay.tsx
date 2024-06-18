@@ -31,6 +31,7 @@ function DeckGLOverlay(props: MapboxOverlayProps): null {
   overlay.setProps(props);
   return null;
 }
+const defaultColor: [number, number, number, number] = [150, 150, 150, 200];
 
 export const MapOverlay: FC<MapOverlayProps> = (props) => {
   const map = useMap();
@@ -38,7 +39,6 @@ export const MapOverlay: FC<MapOverlayProps> = (props) => {
   const drawingMode = useAppStore((state) => state.mode);
   const [isPanning, setIsPanning] = useState(false);
   const color = useAppStore((state) => state.color);
-  const colorRGB = useMemo(() => colorToRGBA(color), [color]);
 
   const {features, addFeature, initialize} = useAppStore((state) => ({
     features: state.features,
@@ -113,9 +113,9 @@ export const MapOverlay: FC<MapOverlayProps> = (props) => {
       },
 
       getFillColor: (f) =>
-        f.properties.color ? colorToRGBA(f.properties.color) : colorRGB,
+        f.properties.color ? colorToRGBA(f.properties.color) : defaultColor,
       getLineColor: (f) =>
-        f.properties.color ? colorToRGBA(f.properties.color) : colorRGB,
+        f.properties.color ? colorToRGBA(f.properties.color) : defaultColor,
     }),
   ];
   // console.log(features);
@@ -144,7 +144,7 @@ export const MapOverlay: FC<MapOverlayProps> = (props) => {
         handleAddHexagon(event);
       }
     },
-    [drawingMode, isPanning]
+    [drawingMode, isPanning, handleAddHexagon]
   );
 
   const handleDrag = useCallback(
@@ -154,7 +154,7 @@ export const MapOverlay: FC<MapOverlayProps> = (props) => {
         handleAddHexagon(event);
       }
     },
-    [drawingMode, isPanning]
+    [drawingMode, isPanning, handleAddHexagon]
   );
 
   return (

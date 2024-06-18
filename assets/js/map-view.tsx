@@ -1,6 +1,6 @@
 import React, {FC} from 'react';
 import {Map as ReactMapGl} from 'react-map-gl/maplibre';
-import {MapOverlay} from './MapOverlay';
+import {MapOverlay} from './map-overlay';
 
 const INITIAL_VIEW_STATE = {
   latitude: 37.77712591285937,

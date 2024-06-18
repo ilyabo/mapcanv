@@ -1,7 +1,7 @@
 // src/store.ts
 import {create} from 'zustand';
 import {channel} from './user_socket';
-import {interpolateRainbow} from 'd3';
+import {interpolateRainbow, rgb} from 'd3';
 
 interface Feature {
   type: string;
@@ -15,14 +15,15 @@ interface Feature {
 }
 
 export enum DrawingMode {
-  DRAW_HEXAGON = 'H3 Hexagons',
-  DRAW_POLYGON = 'Polygons',
+  DRAW_HEXAGON = 'Draw Hexagons',
+  DRAW_POLYGON = 'Draw Polygons',
   // MODIFY = 'Modify',
 }
 
 interface DrawingState {
   features: Feature[];
   color: string;
+  setColor: (color: string) => void;
   initialized: boolean;
   setFeatures: (features: Feature[]) => void;
   addFeature: (feature: Feature, fromServer?: boolean) => void;
@@ -34,9 +35,10 @@ interface DrawingState {
 
 export const useAppStore = create<DrawingState>((set, get) => ({
   features: [],
-  color: interpolateRainbow(Math.random()),
+  color: rgb(interpolateRainbow(Math.random())).formatHex(),
   initialized: false,
   mode: DrawingMode.DRAW_HEXAGON,
+  setColor: (color) => set({color}),
   setDrawingMode: (mode) => set({mode}),
   setFeatures: (features) =>
     set({features: Array.isArray(features) ? features : []}),

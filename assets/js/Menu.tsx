@@ -1,6 +1,6 @@
 import React, {FC} from 'react';
 import {DrawingMode, useAppStore} from './store';
-import {Button} from './ui/Button';
+import {Button} from './ui/button';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -10,7 +10,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuShortcut,
   DropdownMenuTrigger,
-} from './ui/DropdownMenu';
+} from './ui/dropdown-menu';
 import {HamburgerMenuIcon} from '@radix-ui/react-icons';
 export type ModeSelectorProps = {};
 
