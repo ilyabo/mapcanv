@@ -5,7 +5,7 @@ import type {ButtonProps} from './button';
 import {Button} from './button';
 import {Input} from './input';
 import React from 'react';
-import {Popover, PopoverContent, PopoverTrigger} from './Popover';
+import {Popover, PopoverContent, PopoverTrigger} from './popover';
 
 export interface ColorPickerProps {
   value: string;

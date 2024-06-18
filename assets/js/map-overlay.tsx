@@ -8,13 +8,12 @@ import {
   MapboxOverlayProps,
 } from '@deck.gl/mapbox';
 import {cellToBoundary, latLngToCell} from 'h3-js';
-import {FC, useMemo} from 'react';
+import {FC} from 'react';
 import {Map} from 'maplibre-gl';
 import React, {useCallback, useEffect, useState} from 'react';
 import {useControl, useMap} from 'react-map-gl/maplibre';
 import {DrawingMode, useAppStore} from './store';
 import {colorToRGBA} from './utils';
-import {rgb} from 'd3';
 
 export type MapOverlayProps = {};
 
@@ -35,6 +34,7 @@ const defaultColor: [number, number, number, number] = [150, 150, 150, 200];
 
 export const MapOverlay: FC<MapOverlayProps> = (props) => {
   const map = useMap();
+  const hexResolution = useAppStore((state) => state.hexResolution);
   const mapInstance = map.current?.getMap();
   const drawingMode = useAppStore((state) => state.mode);
   const [isPanning, setIsPanning] = useState(false);
@@ -74,12 +74,6 @@ export const MapOverlay: FC<MapOverlayProps> = (props) => {
   useEffect(() => {
     setDrawPolygons({type: 'FeatureCollection', features: features});
   }, [features]);
-  useEffect(() => {
-    if (drawingMode === DrawingMode.DRAW_HEXAGON) {
-    } else {
-      mapInstance?.dragPan.enable();
-    }
-  }, [drawingMode, mapInstance]);
 
   const [drawPolygons, setDrawPolygons] = useState({
     type: 'FeatureCollection',
@@ -115,7 +109,9 @@ export const MapOverlay: FC<MapOverlayProps> = (props) => {
       getFillColor: (f) =>
         f.properties.color ? colorToRGBA(f.properties.color) : defaultColor,
       getLineColor: (f) =>
-        f.properties.color ? colorToRGBA(f.properties.color) : defaultColor,
+        f.properties.color
+          ? colorToRGBA(f.properties.color, {darker: -0.2})
+          : defaultColor,
     }),
   ];
   // console.log(features);
@@ -123,7 +119,7 @@ export const MapOverlay: FC<MapOverlayProps> = (props) => {
   const handleAddHexagon = useCallback(
     (event) => {
       const [lng, lat] = event.coordinate;
-      const h3 = latLngToCell(lat, lng, Math.max(6, event.viewport.zoom - 2));
+      const h3 = latLngToCell(lat, lng, hexResolution);
       const boundary = cellToBoundary(h3, true);
       addFeature({
         type: 'Feature',
@@ -134,7 +130,7 @@ export const MapOverlay: FC<MapOverlayProps> = (props) => {
         properties: {color},
       });
     },
-    [addFeature, color]
+    [addFeature, color, hexResolution]
   );
 
   const handleClick = useCallback(

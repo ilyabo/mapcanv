@@ -31,6 +31,8 @@ interface DrawingState {
   initialize: () => void;
   mode: DrawingMode;
   setDrawingMode: (mode: DrawingMode) => void;
+  hexResolution: number;
+  setHexResolution: (resolution: number) => void;
 }
 
 export const useAppStore = create<DrawingState>((set, get) => ({
@@ -38,7 +40,12 @@ export const useAppStore = create<DrawingState>((set, get) => ({
   color: rgb(interpolateRainbow(Math.random())).formatHex(),
   initialized: false,
   mode: DrawingMode.DRAW_HEXAGON,
+  hexResolution: 10,
   setColor: (color) => set({color}),
+  setHexResolution: (resolution) => {
+    console.log('setting resolution', resolution);
+    return set({hexResolution: resolution});
+  },
   setDrawingMode: (mode) => set({mode}),
   setFeatures: (features) =>
     set({features: Array.isArray(features) ? features : []}),
