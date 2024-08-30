@@ -1,7 +1,15 @@
-import React, {FC} from 'react';
-import {DrawingMode, useAppStore} from './store';
-import {Slider} from './ui/slider';
-import {cn} from './ui/utils';
+import React, {FC} from "react";
+import {DrawingMode, useAppStore} from "./store";
+import {Slider} from "./ui/slider";
+import {cn} from "./ui/utils";
+
+const MIN_HEX_RESOLUTION = 8;
+const MAX_HEX_RESOLUTION = 12;
+// 0..4 -> 12..8
+const sliderToResolution = (v: number) => MAX_HEX_RESOLUTION - v;
+
+// 12..8 -> 0..4
+const resolutionToSlider = (v: number) => MAX_HEX_RESOLUTION - v;
 
 export type HexSizeSelectorProps = {className?: string};
 export const HexSizeSelector: FC<HexSizeSelectorProps> = (props) => {
@@ -13,14 +21,14 @@ export const HexSizeSelector: FC<HexSizeSelectorProps> = (props) => {
     return null;
   }
   return (
-    <div className={cn('flex flex-col gap-1', className)}>
-      <div className="text-xs">{`Hex resolution: ${hexResolution}`}</div>
+    <div className={cn("flex flex-col gap-1", className)}>
+      <div className="text-xs">{`H3 resolution: ${hexResolution}`}</div>
       <Slider
-        value={[hexResolution]}
-        min={8}
-        max={12}
+        value={[resolutionToSlider(hexResolution)]}
+        min={0}
+        max={4}
         step={1}
-        onValueChange={(v) => setHexResolution(v[0])}
+        onValueChange={(v) => setHexResolution(sliderToResolution(v[0]))}
       />
     </div>
   );
