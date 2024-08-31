@@ -18,7 +18,7 @@ import React, {
   useState,
 } from "react";
 import {useControl} from "react-map-gl/maplibre";
-import {useDrawHandler} from "./drawing/draw-handlers";
+import {useDrawHandler} from "./drawing/use-draw-handlers";
 import {useAppStore} from "./store";
 import {colorToRGBA, findLastLabelLayerId} from "./utils";
 import {useModeKeyStrokes} from "./drawing/use-mode-keystrokes";
@@ -41,7 +41,6 @@ const INITIAL_VIEW_STATE = {
 function DeckGLOverlay(props: MapboxOverlayProps): null {
   const overlay = useControl(({map}) => {
     const mapInstance = map.getMap() as Map;
-    mapInstance?.dragPan.disable();
     mapInstance.doubleClickZoom.disable();
     mapInstance.dragRotate.disable();
     mapInstance.touchPitch.disable();
@@ -54,11 +53,21 @@ function DeckGLOverlay(props: MapboxOverlayProps): null {
 
 export const MapView: FC = () => {
   const features = useAppStore((state) => state.features);
+  const selectedIds = useAppStore((state) => state.selectedIds);
   const mapRef = useRef<MapRef>(null);
   const [beforeId, setBeforeId] = useState();
+
   useModeKeyStrokes();
-  usePanning(mapRef);
+  usePanning();
+
   const drawHandlers = useDrawHandler({mapRef: mapRef.current});
+  useEffect(() => {
+    if (drawHandlers.enableDragPan) {
+      mapRef.current?.getMap().dragPan.enable();
+    } else {
+      mapRef.current?.getMap().dragPan.disable();
+    }
+  }, [drawHandlers.enableDragPan]);
 
   const onMapLoad = useCallback(() => {
     if (!mapRef.current) return;
@@ -74,14 +83,24 @@ export const MapView: FC = () => {
     [features]
   );
 
-  console.log("features", features);
+  // console.log("features", features);
+
+  const selectedFeatureIndexes = useMemo(
+    () =>
+      selectedIds
+        ? features
+            .map((f, i) => (selectedIds.includes(String(f.id)) ? i : -1))
+            .filter((i) => i !== -1)
+        : [],
+    [features, selectedIds]
+  );
 
   const layers = [
     new EditableGeoJsonLayer({
       id: "editable-geojson-layer",
       data: featureCollection,
       mode: drawHandlers.editMode,
-      selectedFeatureIndexes: [],
+      selectedFeatureIndexes,
       pickable: true,
       // @ts-ignore
       beforeId, // ensure the layer is rendered before the label layers
@@ -89,12 +108,16 @@ export const MapView: FC = () => {
 
       getFillColor: (f) =>
         f.properties.color ? colorToRGBA(f.properties.color) : defaultColor,
-      stroked: false,
+      stroked: true,
       filled: true,
-      // getLineColor: (f) =>
-      //   f.properties.color
-      //     ? colorToRGBA(f.properties.color, {darker: -0.2})
-      //     : defaultColor,
+      lineWidthUnits: "pixels",
+      getLineWidth: (f) => (selectedIds?.includes(f.id) ? 5 : 1),
+      getLineColor: (f) =>
+        selectedIds?.includes(f.id)
+          ? [255, 100, 0, 255]
+          : f.properties.color
+          ? colorToRGBA(f.properties.color, {darker: 0.25})
+          : defaultColor,
     }),
   ];
 

@@ -29,4 +29,5 @@ export type DrawHandlers = {
   onEdit: Parameters<EditableGeoJsonLayer["getModeProps"]>[0]["onEdit"]; // EditableGeojsonLayerProps is not exported
   cursor: string;
   editMode: typeof GeoJsonEditMode;
+  enableDragPan: boolean;
 };

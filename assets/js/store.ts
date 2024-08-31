@@ -11,7 +11,9 @@ interface DrawingState {
   features: PolygonFeature[];
   isPanning: boolean;
   color: string;
+  selectedIds: string[] | undefined;
   setColor: (color: string) => void;
+  setSelection: (ids: string[] | undefined) => void;
   initialized: boolean;
   // setFeatures: (features: PolygonFeature[]) => void;
   setPanning: (isPanning: boolean) => void;
@@ -32,7 +34,9 @@ export const useAppStore = create<DrawingState>((set, get) => ({
   features: [],
   color: rgb(interpolateRainbow(Math.random())).formatHex(),
   initialized: false,
-  mode: DrawingMode.DRAW_HEXAGON,
+  selectedIds: undefined,
+  mode: DrawingMode.SELECT,
+  selectedIndexes: undefined,
   hexResolution: 10,
   isPanning: false,
   setColor: (color) => set({color}),
@@ -41,6 +45,10 @@ export const useAppStore = create<DrawingState>((set, get) => ({
   setPanning: (isPanning) => set({isPanning}),
   // setFeatures: (features) =>
   //   set({features: Array.isArray(features) ? features : []}),
+
+  setSelection: (ids) => {
+    set({selectedIds: ids});
+  },
 
   updateFeaturesByIndexes: (updatedFeatures, indexes) => {
     set((state) => ({

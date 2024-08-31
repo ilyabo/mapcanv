@@ -1,6 +1,10 @@
 import {DrawHandlerContext, DrawHandlers, DrawingMode} from "./types";
 
-import {DrawPolygonMode, ViewMode} from "@deck.gl-community/editable-layers";
+import {
+  DrawPolygonMode,
+  ModifyMode,
+  ViewMode,
+} from "@deck.gl-community/editable-layers";
 import {cellToBoundary, latLngToCell} from "h3-js";
 import {useAppStore} from "../store";
 import {createId} from "@paralleldrive/cuid2";
@@ -9,24 +13,51 @@ const NOOP = () => {};
 const defaultHandlers = {onClick: NOOP, onDrag: NOOP, onEdit: NOOP};
 
 export function useDrawHandler(context: DrawHandlerContext): DrawHandlers {
+  const {mapRef} = context;
   const drawingMode = useAppStore((state) => state.mode);
   const isPanning = useAppStore((state) => state.isPanning);
-  const handlers = {
+  const drawHandlers = {
     [DrawingMode.SELECT]: useSelectHandlers(context),
     [DrawingMode.DRAW_POLYGON]: usePolygonHandlers(context),
     [DrawingMode.DRAW_HEXAGON]: useHexagonHandlers(context),
   } satisfies Record<DrawingMode, DrawHandlers>;
   if (isPanning) {
-    return {...defaultHandlers, cursor: "grabbing", editMode: ViewMode};
+    return {
+      ...defaultHandlers,
+      cursor: "grabbing",
+      editMode: ViewMode,
+      enableDragPan: true,
+    };
   }
-  return handlers[drawingMode];
+  return drawHandlers[drawingMode];
 }
 
 function useSelectHandlers(context: DrawHandlerContext): DrawHandlers {
+  const selectedIds = useAppStore((state) => state.selectedIds);
+  const setSelection = useAppStore((state) => state.setSelection);
+  const updateFeaturesByIndexes = useAppStore(
+    (state) => state.updateFeaturesByIndexes
+  );
   return {
     ...defaultHandlers,
+    onClick: (evt) => {
+      const {object, index} = evt;
+      // console.log("select", object, index);
+      // setSelection(object ? [object.id] : undefined);
+      if (object) {
+        setSelection([object.id]);
+      }
+    },
+    onEdit: ({updatedData, editType, editContext}) => {
+      // console.log({updatedData, editType, editContext});
+      const {featureIndexes} = editContext;
+      if (featureIndexes && featureIndexes.length > 0) {
+        updateFeaturesByIndexes(updatedData.features, featureIndexes);
+      }
+    },
     cursor: "pointer",
-    editMode: ViewMode,
+    editMode: selectedIds ? ModifyMode : ViewMode,
+    enableDragPan: selectedIds ? false : true,
   };
 }
 
@@ -57,6 +88,7 @@ function usePolygonHandlers(context: DrawHandlerContext): DrawHandlers {
     },
     cursor: "crosshair",
     editMode: DrawPolygonMode,
+    enableDragPan: false,
   };
 }
 
@@ -85,5 +117,6 @@ function useHexagonHandlers(context: DrawHandlerContext): DrawHandlers {
     onDrag: addHexagon,
     cursor: "crosshair",
     editMode: ViewMode,
+    enableDragPan: false,
   };
 }
