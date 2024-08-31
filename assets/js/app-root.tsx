@@ -1,10 +1,10 @@
 // src/App.tsx
-import React, {useEffect} from 'react';
-import {MapView} from './map-view';
-import {Menu} from './menu';
-import {ColorSelector} from './color-selector';
-import {HexSizeSelector} from './hex-size-selector';
-import {useAppStore} from './store';
+import React, {useEffect} from "react";
+import {MapView} from "./map-view";
+import {Menu} from "./menu";
+import {ColorSelector} from "./color-selector";
+import {HexSizeSelector} from "./hex-size-selector";
+import {useAppStore} from "./store";
 
 const AppRoot: React.FC = () => {
   const initialize = useAppStore((state) => state.initialize);

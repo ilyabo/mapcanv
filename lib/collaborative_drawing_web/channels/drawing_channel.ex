@@ -9,7 +9,8 @@ defmodule CollaborativeDrawingWeb.DrawingChannel do
 
   @impl true
   def handle_in("draw", %{"feature" => feature} = payload, socket) do
-    CollaborativeDrawing.FeaturesAgent.add_feature(feature)
+    CollaborativeDrawing.FeaturesAgent.add_or_update_feature(feature)
+    IO.inspect(payload, label: "Broadcasting payload")
     broadcast(socket, "draw", payload)
     {:noreply, socket}
   end

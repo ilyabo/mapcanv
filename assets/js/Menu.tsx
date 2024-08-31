@@ -1,6 +1,6 @@
-import React, {FC} from 'react';
-import {DrawingMode, useAppStore} from './store';
-import {Button} from './ui/button';
+import React, {FC} from "react";
+import {useAppStore} from "./store";
+import {Button} from "./ui/button";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -10,32 +10,14 @@ import {
   DropdownMenuSeparator,
   DropdownMenuShortcut,
   DropdownMenuTrigger,
-} from './ui/dropdown-menu';
-import {HamburgerMenuIcon} from '@radix-ui/react-icons';
+} from "./ui/dropdown-menu";
+import {HamburgerMenuIcon} from "@radix-ui/react-icons";
+import {DrawingMode, KEYSTROKES_BY_MODE} from "./drawing/types";
 export type ModeSelectorProps = {};
-
-const KEYSTROKES_BY_MODE = {
-  [DrawingMode.DRAW_POLYGON]: 'p',
-  [DrawingMode.DRAW_HEXAGON]: 'h',
-};
 
 export const Menu: FC<ModeSelectorProps> = (props) => {
   const drawingMode = useAppStore((state) => state.mode);
   const setDrawingMode = useAppStore((state) => state.setDrawingMode);
-
-  // add keyboard shortcuts for changing drawing mode
-  React.useEffect(() => {
-    const handleKeyDown = (e: KeyboardEvent) => {
-      for (const mode in KEYSTROKES_BY_MODE) {
-        if (e.key === KEYSTROKES_BY_MODE[mode]) {
-          setDrawingMode(mode as DrawingMode);
-          break;
-        }
-      }
-    };
-    window.addEventListener('keydown', handleKeyDown);
-    return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [setDrawingMode]);
 
   return (
     <DropdownMenu>

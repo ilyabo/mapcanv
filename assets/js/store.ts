@@ -1,32 +1,25 @@
 // src/store.ts
-import {create} from 'zustand';
-import {channel} from './user_socket';
-import {interpolateRainbow, rgb} from 'd3';
+import {FeatureOf, Polygon} from "@deck.gl-community/editable-layers";
+import {interpolateRainbow, rgb} from "d3";
+import {create} from "zustand";
+import {channel} from "./user_socket";
+import {DrawingMode} from "./drawing/types";
 
-interface Feature {
-  type: string;
-  geometry: {
-    type: string;
-    coordinates: number[][][];
-  };
-  properties: {
-    color: string;
-  };
-}
-
-export enum DrawingMode {
-  DRAW_HEXAGON = 'Draw Hexagons',
-  DRAW_POLYGON = 'Draw Polygons',
-  // MODIFY = 'Modify',
-}
+export type PolygonFeature = FeatureOf<Polygon>;
 
 interface DrawingState {
-  features: Feature[];
+  features: PolygonFeature[];
+  isPanning: boolean;
   color: string;
   setColor: (color: string) => void;
   initialized: boolean;
-  setFeatures: (features: Feature[]) => void;
-  addFeature: (feature: Feature, fromServer?: boolean) => void;
+  // setFeatures: (features: PolygonFeature[]) => void;
+  setPanning: (isPanning: boolean) => void;
+  updateFeaturesByIndexes: (
+    features: PolygonFeature[],
+    indexes: number[]
+  ) => void;
+  addOrUpdateFeature: (feature: PolygonFeature, fromServer?: boolean) => void;
   clear: () => void;
   initialize: () => void;
   mode: DrawingMode;
@@ -41,15 +34,38 @@ export const useAppStore = create<DrawingState>((set, get) => ({
   initialized: false,
   mode: DrawingMode.DRAW_HEXAGON,
   hexResolution: 10,
+  isPanning: false,
   setColor: (color) => set({color}),
   setHexResolution: (resolution) => set({hexResolution: resolution}),
   setDrawingMode: (mode) => set({mode}),
-  setFeatures: (features) =>
-    set({features: Array.isArray(features) ? features : []}),
-  addFeature: (feature, fromServer = false) => {
-    set((state) => ({features: [...state.features, feature]}));
+  setPanning: (isPanning) => set({isPanning}),
+  // setFeatures: (features) =>
+  //   set({features: Array.isArray(features) ? features : []}),
+
+  updateFeaturesByIndexes: (updatedFeatures, indexes) => {
+    set((state) => ({
+      features: updatedFeatures,
+    }));
+    for (const index of indexes) {
+      channel.push("draw", {feature: updatedFeatures[index]});
+    }
+  },
+
+  addOrUpdateFeature: (feature, fromServer = false) => {
+    const {features} = get();
+    if (features.find((f) => f.id === feature.id)) {
+      // Update the feature
+      set((state) => ({
+        features: state.features.map((f) =>
+          f.id === feature.id ? feature : f
+        ),
+      }));
+    } else {
+      // Add the new feature
+      set((state) => ({features: [...state.features, feature]}));
+    }
     if (!fromServer) {
-      channel.push('draw', {feature});
+      channel.push("draw", {feature});
     }
   },
   clear: () => set({features: []}),
@@ -58,15 +74,17 @@ export const useAppStore = create<DrawingState>((set, get) => ({
     set({initialized: true});
     channel
       .join()
-      .receive('ok', ({features}) => {
+      .receive("ok", ({features}) => {
         set({features: Array.isArray(features) ? features : []});
       })
-      .receive('error', ({reason}) => {
-        console.error('failed to join', reason);
+      .receive("error", ({reason}) => {
+        console.error("failed to join", reason);
       });
 
-    channel.on('draw', ({feature}: {feature: Feature}) => {
-      set((state) => ({features: [...state.features, feature]}));
+    channel.on("draw", ({feature}: {feature: PolygonFeature}) => {
+      // set((state) => ({features: [...state.features, feature]}));
+      console.log("draw", feature);
+      get().addOrUpdateFeature(feature, true);
     });
   },
 }));

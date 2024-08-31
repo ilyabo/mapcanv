@@ -1,25 +1,33 @@
-import {MapRef, Map as ReactMapGl} from 'react-map-gl/maplibre';
 import {
-  DrawPolygonMode,
   EditableGeoJsonLayer,
-  ViewMode,
-} from '@deck.gl-community/editable-layers';
+  FeatureCollection,
+} from "@deck.gl-community/editable-layers";
 import {
   MapboxOverlay as DeckOverlay,
   MapboxOverlayProps,
-} from '@deck.gl/mapbox';
-import {cellToBoundary, latLngToCell} from 'h3-js';
-import {FC, useRef} from 'react';
-import {Map} from 'maplibre-gl';
-import React, {useCallback, useEffect, useState} from 'react';
-import {useControl} from 'react-map-gl/maplibre';
-import {DrawingMode, useAppStore} from './store';
-import {colorToRGBA, findLastLabelLayerId} from './utils';
+} from "@deck.gl/mapbox";
+import {MapRef, Map as ReactMapGl} from "react-map-gl/maplibre";
+
+import {Map} from "maplibre-gl";
+import React, {
+  FC,
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
+import {useControl} from "react-map-gl/maplibre";
+import {useDrawHandler} from "./drawing/draw-handlers";
+import {useAppStore} from "./store";
+import {colorToRGBA, findLastLabelLayerId} from "./utils";
+import {useModeKeyStrokes} from "./drawing/use-mode-keystrokes";
+import {usePanning} from "./drawing/use-panning";
 
 const defaultColor: [number, number, number, number] = [150, 150, 150, 200];
 
 const MAP_STYLE =
-  'https://basemaps.cartocdn.com/gl/positron-gl-style/style.json';
+  "https://basemaps.cartocdn.com/gl/positron-gl-style/style.json";
 
 const INITIAL_VIEW_STATE = {
   latitude: 37.77712591285937,
@@ -45,80 +53,39 @@ function DeckGLOverlay(props: MapboxOverlayProps): null {
 }
 
 export const MapView: FC = () => {
-  const mapRef = useRef<MapRef>();
+  const features = useAppStore((state) => state.features);
+  const mapRef = useRef<MapRef>(null);
   const [beforeId, setBeforeId] = useState();
-
-  const hexResolution = useAppStore((state) => state.hexResolution);
-  const drawingMode = useAppStore((state) => state.mode);
-  const [isPanning, setIsPanning] = useState(false);
-  const color = useAppStore((state) => state.color);
-
-  const {features, addFeature} = useAppStore((state) => ({
-    features: state.features,
-    addFeature: state.addFeature,
-  }));
+  useModeKeyStrokes();
+  usePanning(mapRef);
+  const drawHandlers = useDrawHandler({mapRef: mapRef.current});
 
   const onMapLoad = useCallback(() => {
     if (!mapRef.current) return;
     setBeforeId(findLastLabelLayerId(mapRef.current.getStyle()));
   }, []);
 
-  // add space keyboard event listener
-  useEffect(() => {
-    const onKeyDown = (evt) => {
-      if (evt.key === ' ') {
-        mapRef.current?.getMap().dragPan.enable();
-        setIsPanning(true);
-      }
-    };
-    const onKeyUp = (evt) => {
-      if (evt.key === ' ') {
-        mapRef.current?.getMap().dragPan.disable();
-        setIsPanning(false);
-      }
-    };
-    window.addEventListener('keydown', onKeyDown);
-    window.addEventListener('keyup', onKeyUp);
-    return () => {
-      window.removeEventListener('keydown', onKeyDown);
-      window.removeEventListener('keyup', onKeyUp);
-    };
-  }, []);
+  const featureCollection = useMemo(
+    () =>
+      ({
+        type: "FeatureCollection",
+        features: features,
+      } satisfies FeatureCollection),
+    [features]
+  );
 
-  useEffect(() => {
-    setDrawPolygons({type: 'FeatureCollection', features: features});
-  }, [features]);
-
-  const [drawPolygons, setDrawPolygons] = useState({
-    type: 'FeatureCollection',
-    features: features,
-  });
+  console.log("features", features);
 
   const layers = [
     new EditableGeoJsonLayer({
-      id: 'editable-geojson-layer',
-      data: drawPolygons,
-      mode:
-        drawingMode === DrawingMode.DRAW_POLYGON
-          ? DrawPolygonMode
-          : drawingMode === DrawingMode.DRAW_HEXAGON
-          ? ViewMode
-          : ViewMode,
+      id: "editable-geojson-layer",
+      data: featureCollection,
+      mode: drawHandlers.editMode,
       selectedFeatureIndexes: [],
       pickable: true,
-      beforeId: beforeId,
-      onEdit: ({updatedData, editType, editContext}) => {
-        setDrawPolygons(updatedData);
-        if (editType === 'addFeature') {
-          const {featureIndexes} = editContext;
-          if (featureIndexes.length > 0) {
-            addFeature({
-              ...updatedData.features[featureIndexes[0]],
-              properties: {color},
-            });
-          }
-        }
-      },
+      // @ts-ignore
+      beforeId, // ensure the layer is rendered before the label layers
+      onEdit: drawHandlers.onEdit,
 
       getFillColor: (f) =>
         f.properties.color ? colorToRGBA(f.properties.color) : defaultColor,
@@ -130,44 +97,6 @@ export const MapView: FC = () => {
       //     : defaultColor,
     }),
   ];
-  // console.log(features);
-
-  const handleAddHexagon = useCallback(
-    (event) => {
-      const [lng, lat] = event.coordinate;
-      const h3 = latLngToCell(lat, lng, hexResolution);
-      const boundary = cellToBoundary(h3, true);
-      addFeature({
-        type: 'Feature',
-        geometry: {
-          type: 'Polygon',
-          coordinates: [boundary],
-        },
-        properties: {color},
-      });
-    },
-    [addFeature, color, hexResolution]
-  );
-
-  const handleClick = useCallback(
-    (event) => {
-      if (isPanning) return;
-      if (drawingMode === DrawingMode.DRAW_HEXAGON) {
-        handleAddHexagon(event);
-      }
-    },
-    [drawingMode, isPanning, handleAddHexagon]
-  );
-
-  const handleDrag = useCallback(
-    (event) => {
-      if (isPanning) return;
-      if (drawingMode === DrawingMode.DRAW_HEXAGON) {
-        handleAddHexagon(event);
-      }
-    },
-    [drawingMode, isPanning, handleAddHexagon]
-  );
 
   return (
     <ReactMapGl
@@ -180,9 +109,9 @@ export const MapView: FC = () => {
     >
       <DeckGLOverlay
         layers={layers}
-        getCursor={() => (isPanning ? 'grab' : 'crosshair')}
-        onClick={handleClick}
-        onDrag={handleDrag}
+        getCursor={() => drawHandlers.cursor}
+        onClick={drawHandlers.onClick}
+        onDrag={drawHandlers.onDrag}
         interleaved
       />
     </ReactMapGl>
