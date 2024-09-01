@@ -17,11 +17,19 @@ export function useDrawHandler(context: DrawHandlerContext): DrawHandlers {
   const {mapRef} = context;
   const drawingMode = useAppStore((state) => state.mode);
   const isPanning = useAppStore((state) => state.isPanning);
+  const setDrawingMode = useAppStore((state) => state.setDrawingMode);
   const drawHandlers = {
     [DrawingMode.SELECT]: useSelectHandlers(context),
     [DrawingMode.DRAW_POLYGON]: usePolygonHandlers(context),
     [DrawingMode.DRAW_HEXAGON]: useHexagonHandlers(context),
   } satisfies Record<DrawingMode, DrawHandlers>;
+  useEffect(() => {
+    const onKeyDown = (evt) =>
+      evt.key === "Escape" && setDrawingMode(DrawingMode.SELECT);
+    window.addEventListener("keydown", onKeyDown);
+    return () => window.removeEventListener("keydown", onKeyDown);
+  }, []);
+
   if (isPanning) {
     return {
       ...defaultHandlers,
@@ -36,19 +44,11 @@ export function useDrawHandler(context: DrawHandlerContext): DrawHandlers {
 function useSelectHandlers(context: DrawHandlerContext): DrawHandlers {
   const selectedIds = useAppStore((state) => state.selectedIds);
   const setSelection = useAppStore((state) => state.setSelection);
-  const updateFeaturesByIndexes = useAppStore(
-    (state) => state.updateFeaturesByIndexes
-  );
+  const addOrUpdateFeatures = useAppStore((state) => state.addOrUpdateFeatures);
   useEffect(() => {
-    const onKeyDown = (evt) => {
-      if (evt.key === "Escape") {
-        setSelection(undefined);
-      }
-    };
+    const onKeyDown = (evt) => evt.key === "Escape" && setSelection(undefined);
     window.addEventListener("keydown", onKeyDown);
-    return () => {
-      window.removeEventListener("keydown", onKeyDown);
-    };
+    return () => window.removeEventListener("keydown", onKeyDown);
   }, []);
   return {
     ...defaultHandlers,
@@ -74,7 +74,9 @@ function useSelectHandlers(context: DrawHandlerContext): DrawHandlers {
       // console.log({updatedData, editType, editContext});
       const {featureIndexes} = editContext;
       if (featureIndexes && featureIndexes.length > 0) {
-        updateFeaturesByIndexes(updatedData.features, featureIndexes);
+        addOrUpdateFeatures(
+          featureIndexes.map((index) => updatedData.features[index])
+        );
       }
     },
     cursor: "pointer",
@@ -85,10 +87,7 @@ function useSelectHandlers(context: DrawHandlerContext): DrawHandlers {
 
 function usePolygonHandlers(context: DrawHandlerContext): DrawHandlers {
   const color = useAppStore((state) => state.color);
-  const updateFeaturesByIndexes = useAppStore(
-    (state) => state.updateFeaturesByIndexes
-  );
-
+  const addOrUpdateFeatures = useAppStore((state) => state.addOrUpdateFeatures);
   return {
     ...defaultHandlers,
     onEdit: ({updatedData, editType, editContext}) => {
@@ -97,13 +96,17 @@ function usePolygonHandlers(context: DrawHandlerContext): DrawHandlers {
         case "addFeature":
           const {featureIndexes} = editContext;
           if (featureIndexes && featureIndexes.length > 0) {
-            const nextFeatures = updatedData.features.map((feature, index) => {
-              if (feature.id) {
-                return feature;
-              }
-              return {...feature, id: createId(), properties: {color}};
-            });
-            updateFeaturesByIndexes(nextFeatures, featureIndexes);
+            addOrUpdateFeatures(
+              featureIndexes.map((index) => {
+                const feature = updatedData.features[index];
+                if (feature.id) {
+                  return feature;
+                } else {
+                  // New feature: Add id and color
+                  return {...feature, id: createId(), properties: {color}};
+                }
+              })
+            );
           }
           break;
       }
@@ -117,21 +120,23 @@ function usePolygonHandlers(context: DrawHandlerContext): DrawHandlers {
 function useHexagonHandlers(context: DrawHandlerContext): DrawHandlers {
   const color = useAppStore((state) => state.color);
   const hexResolution = useAppStore((state) => state.hexResolution);
-  const addOrUpdateFeature = useAppStore((state) => state.addOrUpdateFeature);
+  const addOrUpdateFeatures = useAppStore((state) => state.addOrUpdateFeatures);
   const addHexagon = (event) => {
     if (!event.coordinate) return;
     const [lng, lat] = event.coordinate;
     const h3 = latLngToCell(lat, lng, hexResolution);
     const boundary = cellToBoundary(h3, true);
-    addOrUpdateFeature({
-      id: h3,
-      type: "Feature",
-      geometry: {
-        type: "Polygon",
-        coordinates: [boundary],
+    addOrUpdateFeatures([
+      {
+        id: h3,
+        type: "Feature",
+        geometry: {
+          type: "Polygon",
+          coordinates: [boundary],
+        },
+        properties: {color},
       },
-      properties: {color},
-    });
+    ]);
   };
   return {
     ...defaultHandlers,

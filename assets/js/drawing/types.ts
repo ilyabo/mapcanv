@@ -14,9 +14,9 @@ export enum DrawingMode {
 }
 
 export const KEYSTROKES_BY_MODE = {
-  [DrawingMode.SELECT]: "s",
-  [DrawingMode.DRAW_POLYGON]: "p",
-  [DrawingMode.DRAW_HEXAGON]: "h",
+  [DrawingMode.SELECT]: "1",
+  [DrawingMode.DRAW_HEXAGON]: "2",
+  [DrawingMode.DRAW_POLYGON]: "3",
 };
 
 export type DrawHandlerContext = {
