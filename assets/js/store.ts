@@ -4,8 +4,12 @@ import {interpolateRainbow, rgb} from "d3";
 import {create} from "zustand";
 import {channel} from "./user_socket";
 import {DrawingMode} from "./drawing/types";
+import * as Y from "yjs";
 
 export type PolygonFeature = FeatureOf<Polygon>;
+
+const ydoc = new Y.Doc();
+const yfeatures = ydoc.getMap<PolygonFeature>("features");
 
 interface DrawingState {
   features: PolygonFeature[];
@@ -28,10 +32,11 @@ interface DrawingState {
   setDrawingMode: (mode: DrawingMode) => void;
   hexResolution: number;
   setHexResolution: (resolution: number) => void;
+  updateFeaturesFromY: () => void;
 }
 
 export const useAppStore = create<DrawingState>((set, get) => ({
-  features: [],
+  features: [], // Array of features extracted from yarray for local use (rendering)
   color: rgb(interpolateRainbow(Math.random())).formatHex(),
   initialized: false,
   selectedIds: undefined,
@@ -50,31 +55,49 @@ export const useAppStore = create<DrawingState>((set, get) => ({
     set({selectedIds: ids});
   },
 
+  // Method to update features from yarray
+  updateFeaturesFromY: () => {
+    const features = Array.from(yfeatures.values());
+    console.log("updateFeaturesFromY");
+    return set({features});
+  },
+
   updateFeaturesByIndexes: (updatedFeatures, indexes) => {
-    set((state) => ({
-      features: updatedFeatures,
-    }));
+    // set((state) => ({features: updatedFeatures}));
     for (const index of indexes) {
-      channel.push("draw", {feature: updatedFeatures[index]});
+      const feature = updatedFeatures[index];
+      if (!feature.id) {
+        console.error("Feature must have an id", feature);
+        continue;
+      }
+      yfeatures.set(String(feature.id), feature);
+      // channel.push("draw", {feature: updatedFeatures[index]});
     }
   },
 
   addOrUpdateFeature: (feature, fromServer = false) => {
     const {features} = get();
-    if (features.find((f) => f.id === feature.id)) {
-      // Update the feature
-      set((state) => ({
-        features: state.features.map((f) =>
-          f.id === feature.id ? feature : f
-        ),
-      }));
-    } else {
-      // Add the new feature
-      set((state) => ({features: [...state.features, feature]}));
+    if (!feature.id) {
+      console.error("Feature must have an id", feature);
+      return;
     }
-    if (!fromServer) {
-      channel.push("draw", {feature});
-    }
+    yfeatures.set(String(feature.id), feature);
+    // const index = features.findIndex((f) => f.id === feature.id);
+    // if (index >= 0) {
+    //   // Update the feature
+    //   set((state) => ({
+    //     features: state.features.map((f, i) =>i === index ? feature : f
+    //     ),
+    //   }));
+    //   // Replace the feature in yarray
+    //   yfeatures.set(String(feature.id), feature);
+    // } else {
+    //   // Add the new feature
+    //   set((state) => ({features: [...state.features, feature]}));
+    // }
+    // if (!fromServer) {
+    //   channel.push("draw", {feature});
+    // }
   },
   clear: () => set({features: []}),
   initialize: () => {
@@ -82,8 +105,15 @@ export const useAppStore = create<DrawingState>((set, get) => ({
     set({initialized: true});
     channel
       .join()
+      .receive("error", (resp) => {
+        console.log("Unable to join channel", resp);
+      })
       .receive("ok", ({features}) => {
-        set({features: Array.isArray(features) ? features : []});
+        console.log("Joined successfully");
+        for (const feature of features) {
+          yfeatures.set(String(feature.id), feature);
+        }
+        // set({features: Array.isArray(features) ? features : []});
       })
       .receive("error", ({reason}) => {
         console.error("failed to join", reason);
@@ -96,3 +126,25 @@ export const useAppStore = create<DrawingState>((set, get) => ({
     });
   },
 }));
+
+yfeatures.observe((event) => {
+  event.changes.keys.forEach((change, key) => {
+    if (change.action === "add") {
+      console.log(`Feature added: ${key}`, yfeatures.get(key));
+    } else if (change.action === "update") {
+      console.log(`Feature updated: ${key}`, yfeatures.get(key));
+    } else if (change.action === "delete") {
+      console.log(`Feature deleted: ${key}`);
+    }
+  });
+  useAppStore.getState().updateFeaturesFromY();
+});
+
+ydoc.on("update", (update) => {
+  // The 'update' is a Uint8Array containing only the difference
+  channel.push("yjs-update", {update: Array.from(update)});
+});
+channel.on("yjs-update", (payload) => {
+  const update = new Uint8Array(payload.update);
+  Y.applyUpdate(ydoc, update); // Efficiently applies just the difference
+});

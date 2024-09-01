@@ -2,11 +2,11 @@
 // you uncomment its entry in "assets/js/app.js".
 
 // Bring in Phoenix channels client library:
-import {Socket} from 'phoenix';
+import {Socket} from "phoenix";
 
 // And connect to the path in "lib/collaborative_drawing_web/endpoint.ex". We pass the
 // token for authentication. Read below how it should be used.
-export let socket = new Socket('/socket', {params: {token: window.userToken}});
+export let socket = new Socket("/socket", {params: {token: window.userToken}});
 
 // When you connect, you'll often need to authenticate the client.
 // For example, imagine you have an authentication plug, `MyAuth`,
@@ -56,7 +56,7 @@ socket.connect();
 // Now that you are connected, you can join channels with a topic.
 // Let's assume you have a channel with a topic named `room` and the
 // subtopic is its id - in this case 42:
-export let channel = socket.channel('drawing:lobby', {});
+export const channel = socket.channel("drawing:lobby", {});
 
 // Joining the channel happens in store.ts
 // channel.join()

@@ -7,11 +7,20 @@ defmodule CollaborativeDrawingWeb.DrawingChannel do
     {:ok, %{features: features}, socket}
   end
 
+  # @impl true
+  # @spec handle_in(<<_::32, _::_*48>>, map(), Phoenix.Socket.t()) :: {:noreply, Phoenix.Socket.t()}
+  # def handle_in("draw", %{"feature" => feature} = payload, socket) do
+  #   CollaborativeDrawing.FeaturesAgent.add_or_update_feature(feature)
+  #   IO.inspect(payload, label: "Broadcasting payload")
+  #   broadcast(socket, "draw", payload)
+  #   {:noreply, socket}
+  # end
+
   @impl true
-  def handle_in("draw", %{"feature" => feature} = payload, socket) do
-    CollaborativeDrawing.FeaturesAgent.add_or_update_feature(feature)
-    IO.inspect(payload, label: "Broadcasting payload")
-    broadcast(socket, "draw", payload)
+  @spec handle_in(<<_::80>>, map(), Phoenix.Socket.t()) :: {:noreply, Phoenix.Socket.t()}
+  def handle_in("yjs-update", %{"update" => update}, socket) do
+    # Broadcast the Yjs update to all other clients in the channel
+    broadcast_from!(socket, "yjs-update", %{"update" => update})
     {:noreply, socket}
   end
 
