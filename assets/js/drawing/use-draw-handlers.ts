@@ -8,6 +8,7 @@ import {
 import {cellToBoundary, latLngToCell} from "h3-js";
 import {useAppStore} from "../store";
 import {createId} from "@paralleldrive/cuid2";
+import {useEffect} from "react";
 
 const NOOP = () => {};
 const defaultHandlers = {onClick: NOOP, onDrag: NOOP, onEdit: NOOP};
@@ -38,14 +39,35 @@ function useSelectHandlers(context: DrawHandlerContext): DrawHandlers {
   const updateFeaturesByIndexes = useAppStore(
     (state) => state.updateFeaturesByIndexes
   );
+  useEffect(() => {
+    const onKeyDown = (evt) => {
+      if (evt.key === "Escape") {
+        setSelection(undefined);
+      }
+    };
+    window.addEventListener("keydown", onKeyDown);
+    return () => {
+      window.removeEventListener("keydown", onKeyDown);
+    };
+  }, []);
   return {
     ...defaultHandlers,
     onClick: (evt) => {
-      const {object, index} = evt;
+      const {
+        object,
+        // @ts-ignore
+        isGuide,
+      } = evt;
+      if (isGuide) {
+        // Clicking on a guide, e.g. a midpoint
+        return;
+      }
       // console.log("select", object, index);
       // setSelection(object ? [object.id] : undefined);
       if (object) {
         setSelection([object.id]);
+      } else {
+        setSelection(undefined);
       }
     },
     onEdit: ({updatedData, editType, editContext}) => {

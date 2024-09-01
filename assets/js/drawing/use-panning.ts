@@ -12,6 +12,8 @@ export function usePanning() {
     const onKeyDown = (evt) => {
       if (evt.key === " ") {
         setPanning(true);
+      } else {
+        setPanning(false);
       }
     };
     const onKeyUp = (evt) => {
@@ -19,11 +21,14 @@ export function usePanning() {
         setPanning(false);
       }
     };
+    const onWindowBlur = () => setPanning(false);
     window.addEventListener("keydown", onKeyDown);
     window.addEventListener("keyup", onKeyUp);
+    window.addEventListener("blur", onWindowBlur);
     return () => {
       window.removeEventListener("keydown", onKeyDown);
       window.removeEventListener("keyup", onKeyUp);
+      window.removeEventListener("blur", onWindowBlur);
     };
   }, []);
   return {isPanning};
