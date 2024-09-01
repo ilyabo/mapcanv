@@ -54,9 +54,19 @@ defmodule CollaborativeDrawing.MixProject do
       {:gettext, "~> 0.20"},
       {:jason, "~> 1.2"},
       {:dns_cluster, "~> 0.1.1"},
-      {:bandit, "~> 1.2"}
+      {:bandit, "~> 1.2"},
+      {:rustler, "~> 0.34.0"}
     ]
   end
+
+  # defp rustler_crates do
+  #   [
+  #     my_crdt_nif: [
+  #       path: "native/yscrdt",
+  #       mode: if(Mix.env() == :prod, do: :release, else: :debug)
+  #     ]
+  #   ]
+  # end
 
   # Aliases are shortcuts or tasks specific to the current project.
   # For example, to install project dependencies and perform other setup tasks, run:
