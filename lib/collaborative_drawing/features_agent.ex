@@ -1,42 +1,27 @@
 defmodule CollaborativeDrawing.FeaturesAgent do
   use Agent
 
-  def start_link(_opts) do
-    Agent.start_link(fn -> [] end, name: :features_agent)
+  alias YsCrdt
+
+  # Starts the Agent with an initial state of `nil`
+  def start_link(_) do
+    Agent.start_link(fn -> nil end, name: __MODULE__)
   end
 
-  def get_features do
-    Agent.get(:features_agent, & &1)
+  # Gets the current state
+  def get_state() do
+    Agent.get(__MODULE__, & &1)
   end
 
-  def add_feature(feature) do
-    Agent.update(:features_agent, fn features -> [feature | features] end)
-  end
-
-  def add_or_update_feature(new_feature) do
-    Agent.update(:features_agent, fn features ->
-      # Get the ID of the new feature using string keys
-      new_feature_id = new_feature["id"]
-
-      # Update the features list, replacing the feature with the same ID or adding a new one
-      updated_features =
-        features
-        |> Enum.map(fn feature ->
-          if feature["id"] == new_feature_id do
-            # Replace the existing feature if IDs match
-            new_feature
-          else
-            # Keep the existing feature otherwise
-            feature
-          end
-        end)
-
-      # Check if the new_feature was added or updated
-      if Enum.any?(updated_features, fn feature -> feature == new_feature end) do
-        updated_features
+  # Applies an update to the current state
+  def apply_update(update) do
+    Agent.get_and_update(__MODULE__, fn state ->
+      new_state = if state do
+        YsCrdt.merge_crdt(state, update)
       else
-        [new_feature | features]
+        update
       end
+      {new_state, new_state}
     end)
   end
 

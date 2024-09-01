@@ -1,10 +1,11 @@
 defmodule CollaborativeDrawingWeb.DrawingChannel do
   use CollaborativeDrawingWeb, :channel
+  alias CollaborativeDrawing.FeaturesAgent
 
   @impl true
   def join("drawing:lobby", _payload, socket) do
-    features = CollaborativeDrawing.FeaturesAgent.get_features()
-    {:ok, %{features: features}, socket}
+    current_state = FeaturesAgent.get_state()
+    {:ok, %{"state" => current_state}, socket}
   end
 
   # @impl true
@@ -17,8 +18,10 @@ defmodule CollaborativeDrawingWeb.DrawingChannel do
   # end
 
   @impl true
-  @spec handle_in(<<_::80>>, map(), Phoenix.Socket.t()) :: {:noreply, Phoenix.Socket.t()}
   def handle_in("yjs-update", %{"update" => update}, socket) do
+    # Apply the incoming update and store the new state
+    FeaturesAgent.apply_update(update)
+
     # Broadcast the Yjs update to all other clients in the channel
     broadcast_from!(socket, "yjs-update", %{"update" => update})
     {:noreply, socket}
