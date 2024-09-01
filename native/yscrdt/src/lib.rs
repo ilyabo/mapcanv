@@ -42,6 +42,16 @@ impl Crdt {
 }
 
 #[rustler::nif]
+fn new_doc<'a>(env: Env<'a>) -> NifResult<Binary<'a>> {
+    let doc = Crdt::new();  // Assuming Crdt::new creates a new, empty Yjs document
+    let encoded = doc.to_bytes();  // Serialize the document into binary form
+    let mut out_binary = OwnedBinary::new(encoded.len()).unwrap();
+    out_binary.as_mut_slice().copy_from_slice(&encoded);
+    
+    Ok(out_binary.release(env))
+}
+
+#[rustler::nif]
 fn merge_crdt<'a>(env: Env<'a>, existing_state: Binary<'a>, update: Binary<'a>) -> NifResult<Binary<'a>> {
     let existing_crdt = Crdt::from_bytes(existing_state.as_slice());
     let update_crdt = Crdt::from_bytes(update.as_slice());

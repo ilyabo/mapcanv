@@ -108,11 +108,20 @@ export const useAppStore = create<DrawingState>((set, get) => ({
       .receive("error", (resp) => {
         console.log("Unable to join channel", resp);
       })
-      .receive("ok", ({features}) => {
+      .receive("ok", (resp) => {
         console.log("Joined successfully");
-        for (const feature of features) {
-          yfeatures.set(String(feature.id), feature);
+        console.log("resp", resp);
+        if (resp.state) {
+          const initialState = new Uint8Array(resp.state);
+          Y.applyUpdate(ydoc, initialState); // Apply the initial state to the Yjs document
         }
+        // const initialState = Uint8Array.from(atob(state), (c) =>
+        //   c.charCodeAt(0)
+        // );
+        // Y.applyUpdate(ydoc, initialState);
+        // for (const feature of features) {
+        //   yfeatures.set(String(feature.id), feature);
+        // }
         // set({features: Array.isArray(features) ? features : []});
       })
       .receive("error", ({reason}) => {

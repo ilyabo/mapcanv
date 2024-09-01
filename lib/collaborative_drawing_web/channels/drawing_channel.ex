@@ -19,11 +19,16 @@ defmodule CollaborativeDrawingWeb.DrawingChannel do
 
   @impl true
   def handle_in("yjs-update", %{"update" => update}, socket) do
+    # Ensure update is treated as binary
+    update_binary = if is_list(update), do: :erlang.list_to_binary(update), else: update
+    IO.inspect(update_binary, label: "Incoming Update (Binary)")
+
     # Apply the incoming update and store the new state
-    FeaturesAgent.apply_update(update)
+    FeaturesAgent.apply_update(update_binary)
 
     # Broadcast the Yjs update to all other clients in the channel
     broadcast_from!(socket, "yjs-update", %{"update" => update})
+
     {:noreply, socket}
   end
 
