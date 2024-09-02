@@ -2,6 +2,7 @@
   "dependencies": {
     "@deck.gl-community/editable-layers": "^9.0.0-alpha.1",
     "@deck.gl-community/layers": "^9.0.3",
+    "@deck.gl/geo-layers": "^9.0.28",
     "@deck.gl/mapbox": "^9.0.19",
     "@paralleldrive/cuid2": "^2.2.2",
     "@radix-ui/react-dropdown-menu": "^2.0.6",

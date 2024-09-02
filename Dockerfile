@@ -20,11 +20,11 @@ ARG RUNNER_IMAGE="debian:${DEBIAN_VERSION}"
 
 FROM ${BUILDER_IMAGE} as builder
 
-# install build dependencies
+# Install build dependencies
 RUN apt-get update -y && apt-get install -y build-essential git curl \
     && apt-get clean && rm -f /var/lib/apt/lists/*_*
 
-# Install Node.js 20.x
+# Install Node.js 20.x
 RUN curl -fsSL https://deb.nodesource.com/setup_20.x -o nodesource_setup.sh
 RUN bash nodesource_setup.sh
 RUN apt-get install -y nodejs
@@ -32,23 +32,26 @@ RUN apt-get install -y nodejs
 # Install Yarn
 RUN npm install -g yarn
 
+# Install Rust and Cargo
+RUN curl https://sh.rustup.rs -sSf | sh -s -- -y \
+    && source $HOME/.cargo/env
 
-# prepare build dir
+# Prepare build directory
 WORKDIR /app
 
-# install hex + rebar
+# Install hex + rebar
 RUN mix local.hex --force && \
     mix local.rebar --force
 
-# set build ENV
+# Set build ENV
 ENV MIX_ENV="prod"
 
-# install mix dependencies
+# Install mix dependencies
 COPY mix.exs mix.lock ./
 RUN mix deps.get --only $MIX_ENV
 RUN mkdir config
 
-# copy compile-time config files before we compile dependencies
+# Copy compile-time config files before we compile dependencies
 # to ensure any relevant config change will trigger the dependencies
 # to be re-compiled.
 COPY config/config.exs config/${MIX_ENV}.exs config/
@@ -61,7 +64,7 @@ COPY lib lib
 COPY assets assets
 RUN cd assets && yarn install && cd ..
 
-# compile assets
+# Compile assets
 RUN mix assets.deploy
 
 # Compile the release
@@ -73,7 +76,7 @@ COPY config/runtime.exs config/
 COPY rel rel
 RUN mix release
 
-# start a new build stage so that the final image will only contain
+# Start a new build stage so that the final image will only contain
 # the compiled release and other runtime necessities
 FROM ${RUNNER_IMAGE}
 
@@ -91,7 +94,7 @@ ENV LC_ALL en_US.UTF-8
 WORKDIR "/app"
 RUN chown nobody /app
 
-# set runner ENV
+# Set runner ENV
 ENV MIX_ENV="prod"
 
 # Only copy the final release from the build stage

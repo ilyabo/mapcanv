@@ -1,16 +1,16 @@
-# fly.toml app configuration file generated for mapcanv on 2024-09-02T11:35:59+02:00
+# fly.toml app configuration file generated for mapcanv-long-cherry-7751 on 2024-09-02T11:46:01+02:00
 #
 # See https://fly.io/docs/reference/configuration/ for information about how to use this file.
 #
 
-app = 'mapcanv'
+app = 'mapcanv-long-cherry-7751'
 primary_region = 'ams'
 kill_signal = 'SIGTERM'
 
 [build]
 
 [env]
-  PHX_HOST = 'mapcanv.fly.dev'
+  PHX_HOST = 'mapcanv-long-cherry-7751.fly.dev'
   PORT = '8080'
 
 [http_service]
