@@ -25,7 +25,9 @@ impl Crdt {
             Ok(update) => {
                 let state_vector_before = doc.transact().state_vector();
                 doc.transact().encode_state_as_update_v1(&state_vector_before);
-                doc.transact_mut().apply_update(update);
+                doc.transact_mut().apply_update(update).unwrap_or_else(|e| {
+                    println!("Failed to apply update: {:?}", e);
+                });
             }
             Err(e) => {
                 println!("Failed to decode update: {:?}", e);
@@ -48,7 +50,9 @@ impl Crdt {
      */
     fn merge(&mut self, other: &Crdt) {
         let other_update = other.doc.transact().encode_state_as_update_v1(&self.doc.transact().state_vector());
-        self.doc.transact_mut().apply_update(Update::decode_v1(&other_update).unwrap());
+        self.doc.transact_mut().apply_update(Update::decode_v1(&other_update).unwrap()).unwrap_or_else(|e| {
+            println!("Failed to apply update: {:?}", e);
+        });
     }
 }
 
