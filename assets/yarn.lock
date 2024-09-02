@@ -4933,13 +4933,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"phoenix-js@npm:^1.0.3":
-  version: 1.0.3
-  resolution: "phoenix-js@npm:1.0.3"
-  checksum: 10c0/a89ea0d5ffd4ae135b88c71aa6df6d3665d49fc07622b92cd923f05f26f20e92bcee58b3d23a9eb9788d900810322ba9c401aec66a8058b8411b193ae34e6815
-  languageName: node
-  linkType: hard
-
 "phoenix@npm:^1.7.12":
   version: 1.7.12
   resolution: "phoenix@npm:1.7.12"
@@ -5236,7 +5229,6 @@ __metadata:
     h3-js: "npm:^4.1.0"
     maplibre-gl: "npm:^4.4.0"
     phoenix: "npm:^1.7.12"
-    phoenix-js: "npm:^1.0.3"
     react: "npm:^18.3.1"
     react-colorful: "npm:^5.6.1"
     react-dom: "npm:^18.3.1"

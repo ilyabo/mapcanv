@@ -18,11 +18,11 @@ import React, {
   useState,
 } from "react";
 import {useControl} from "react-map-gl/maplibre";
-import {useDrawHandler} from "./drawing/use-draw-handlers";
-import {useAppStore} from "./store";
-import {colorToRGBA, findLastLabelLayerId} from "./utils";
-import {useModeKeyStrokes} from "./drawing/use-mode-keystrokes";
-import {usePanning} from "./drawing/use-panning";
+import {useDrawHandler} from "../drawing/use-draw-handlers";
+import {useAppStore} from "../store/store";
+import {colorToRGBA, findLastLabelLayerId} from "../store/utils";
+import {useModeKeyStrokes} from "../drawing/use-mode-keystrokes";
+import {usePanning} from "../drawing/use-panning";
 
 const defaultColor: [number, number, number, number] = [150, 150, 150, 200];
 

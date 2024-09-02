@@ -1,6 +1,6 @@
 import React, {FC} from "react";
-import {useAppStore} from "./store";
-import {Button} from "./ui/button";
+import {useAppStore} from "../store/store";
+import {Button} from "../ui/button";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -10,12 +10,12 @@ import {
   DropdownMenuSeparator,
   DropdownMenuShortcut,
   DropdownMenuTrigger,
-} from "./ui/dropdown-menu";
+} from "../ui/dropdown-menu";
 import {HamburgerMenuIcon} from "@radix-ui/react-icons";
-import {DrawingMode, KEYSTROKES_BY_MODE} from "./drawing/types";
+import {DrawingMode, KEYSTROKES_BY_MODE} from "../drawing/types";
 export type ModeSelectorProps = {};
 
-export const Menu: FC<ModeSelectorProps> = (props) => {
+export const Toolbar: FC<ModeSelectorProps> = (props) => {
   const drawingMode = useAppStore((state) => state.mode);
   const setDrawingMode = useAppStore((state) => state.setDrawingMode);
 

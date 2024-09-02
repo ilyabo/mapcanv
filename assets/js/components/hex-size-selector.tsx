@@ -1,8 +1,8 @@
 import React, {FC} from "react";
-import {useAppStore} from "./store";
-import {Slider} from "./ui/slider";
-import {cn} from "./ui/utils";
-import {DrawingMode} from "./drawing/types";
+import {useAppStore} from "../store/store";
+import {Slider} from "../ui/slider";
+import {cn} from "../ui/utils";
+import {DrawingMode} from "../drawing/types";
 
 const MIN_HEX_RESOLUTION = 8;
 const MAX_HEX_RESOLUTION = 12;

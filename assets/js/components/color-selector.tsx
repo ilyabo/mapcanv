@@ -1,8 +1,8 @@
-import {FC} from 'react';
+import {FC} from "react";
 export type ColorSelectorProps = {};
-import {ColorPicker} from './ui/color-picker';
-import React from 'react';
-import {useAppStore} from './store';
+import {ColorPicker} from "../ui/color-picker";
+import React from "react";
+import {useAppStore} from "../store/store";
 
 export const ColorSelector: FC<ColorSelectorProps> = (props) => {
   const {} = props;

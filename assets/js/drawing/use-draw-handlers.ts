@@ -6,7 +6,7 @@ import {
   ViewMode,
 } from "@deck.gl-community/editable-layers";
 import {cellToBoundary, latLngToCell} from "h3-js";
-import {useAppStore} from "../store";
+import {useAppStore} from "../store/store";
 import {createId} from "@paralleldrive/cuid2";
 import {useEffect} from "react";
 

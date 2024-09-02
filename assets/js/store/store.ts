@@ -2,9 +2,10 @@
 import {FeatureOf, Polygon} from "@deck.gl-community/editable-layers";
 import {interpolateRainbow, rgb} from "d3";
 import {create} from "zustand";
-import {channel} from "./user_socket";
-import {DrawingMode} from "./drawing/types";
+
+import {DrawingMode} from "../drawing/types";
 import * as Y from "yjs";
+import {Socket} from "phoenix";
 
 export type PolygonFeature = FeatureOf<Polygon>;
 
@@ -29,6 +30,12 @@ interface DrawingState {
 export const useAppStore = create<DrawingState>((set, get) => {
   const ydoc = new Y.Doc();
   const yfeatures = ydoc.getMap<PolygonFeature>("features");
+
+  const socket = new Socket("/socket" /*{params: {token: window.userToken}}*/);
+  // @ts-ignore
+  socket.connect();
+
+  const channel = socket.channel("drawing:lobby", {});
 
   return {
     features: [], // Array of features extracted from yarray for local use (rendering)

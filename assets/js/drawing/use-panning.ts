@@ -1,5 +1,5 @@
 import {useEffect} from "react";
-import {useAppStore} from "../store";
+import {useAppStore} from "../store/store";
 
 /**
  * Add space keyboard event listener
