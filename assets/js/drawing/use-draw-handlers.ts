@@ -47,7 +47,7 @@ export function useDrawHandler(context: DrawHandlerContext): DrawHandlers {
 
 function useSelectHandlers(context: DrawHandlerContext): DrawHandlers {
   const selectedIds = useAppStore((state) => state.selectedIds);
-  const setSelection = useAppStore((state) => state.setSelection);
+  const setSelection = useAppStore((state) => state.setSelectedIds);
   const addOrUpdateFeatures = useAppStore((state) => state.addOrUpdateFeatures);
   useEffect(() => {
     const onKeyDown = (evt) => evt.key === "Escape" && setSelection(undefined);

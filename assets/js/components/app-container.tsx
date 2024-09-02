@@ -1,6 +1,5 @@
 import React, {useEffect} from "react";
 import {MapView} from "../map/map-view";
-import {ColorSelector} from "./color-selector";
 import {useAppStore} from "../store/store";
 import {ToolbarContainer} from "./toolbar-container";
 import {TooltipProvider} from "./ui/tooltip";
@@ -17,9 +16,6 @@ const AppContainer: React.FC = () => {
       <div className="absolute top-4 left-4">
         <ToolbarContainer />
       </div>
-      {/* <div className="absolute top-0 right-0 p-4 flex flex-row gap-2 items-center">
-        <HexSizeSelector className="w-[110px]" />       
-      </div> */}
     </TooltipProvider>
   );
 };

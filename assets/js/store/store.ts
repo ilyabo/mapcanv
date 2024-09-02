@@ -15,7 +15,7 @@ interface DrawingState {
   color: string;
   selectedIds: string[] | undefined;
   setColor: (color: string) => void;
-  setSelection: (ids: string[] | undefined) => void;
+  setSelectedIds: (ids: string[] | undefined) => void;
   initialized: boolean;
   setPanning: (isPanning: boolean) => void;
   addOrUpdateFeatures: (feature: PolygonFeature[]) => void;
@@ -23,6 +23,7 @@ interface DrawingState {
   initialize: () => void;
   mode: DrawingMode;
   setDrawingMode: (mode: DrawingMode) => void;
+  dropSelectedFeatures: () => void;
   hexResolution: number;
   setHexResolution: (resolution: number) => void;
 }
@@ -38,7 +39,8 @@ export const useAppStore = create<DrawingState>((set, get) => {
   const channel = socket.channel("drawing:lobby", {});
 
   return {
-    features: [], // Array of features extracted from yarray for local use (rendering)
+    // Array of features extracted from yarray used for rendering
+    features: [], // Don't modify this directly, use yfeatures instead
     color: rgb(interpolateRainbow(Math.random())).formatHex(),
     initialized: false,
     selectedIds: undefined,
@@ -46,35 +48,6 @@ export const useAppStore = create<DrawingState>((set, get) => {
     selectedIndexes: undefined,
     hexResolution: 10,
     isPanning: false,
-    setColor: (color) => {
-      set({color});
-      const {selectedIds} = get();
-      if (selectedIds) {
-        applyToSelectedFeatures((feature) => ({
-          ...feature,
-          properties: {...feature.properties, color},
-        }));
-      }
-    },
-    setHexResolution: (resolution) => set({hexResolution: resolution}),
-    setDrawingMode: (mode) => set({mode}),
-    setPanning: (isPanning) => set({isPanning}),
-    setSelection: (ids) => {
-      set({selectedIds: ids});
-    },
-
-    clear: () => yfeatures.clear(),
-
-    addOrUpdateFeatures: (features) => {
-      for (const feature of features) {
-        if (!feature.id) {
-          console.error("Feature must have an id", feature);
-          continue;
-        }
-        // Update the yarray with the new feature
-        yfeatures.set(String(feature.id), feature);
-      }
-    },
 
     initialize: () => {
       if (get().initialized) return;
@@ -126,6 +99,43 @@ export const useAppStore = create<DrawingState>((set, get) => {
       });
 
       set({initialized: true});
+    },
+
+    setColor: (color) => {
+      set({color});
+      const {selectedIds} = get();
+      if (selectedIds) {
+        applyToSelectedFeatures((feature) => ({
+          ...feature,
+          properties: {...feature.properties, color},
+        }));
+      }
+    },
+    setHexResolution: (resolution) => set({hexResolution: resolution}),
+    setDrawingMode: (mode) => set({mode}),
+    setPanning: (isPanning) => set({isPanning}),
+    setSelectedIds: (ids) => set({selectedIds: ids}),
+    clear: () => yfeatures.clear(),
+
+    addOrUpdateFeatures: (features) => {
+      for (const feature of features) {
+        if (!feature.id) {
+          console.error("Feature must have an id", feature);
+          continue;
+        }
+        // Update the yarray with the new feature
+        yfeatures.set(String(feature.id), feature);
+      }
+    },
+
+    dropSelectedFeatures: () => {
+      const {selectedIds, setSelectedIds: setSelection} = get();
+      if (selectedIds) {
+        for (const id of selectedIds) {
+          yfeatures.delete(id);
+        }
+      }
+      set({selectedIds: undefined, mode: DrawingMode.SELECT});
     },
   };
 
