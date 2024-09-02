@@ -2,10 +2,17 @@ defmodule CollaborativeDrawingWeb.DrawingChannel do
   use CollaborativeDrawingWeb, :channel
   alias CollaborativeDrawing.FeaturesAgent
 
+  # TODO: send binary
+  # https://github.com/paulanthonywilson/binary-websockets-example?tab=readme-ov-file
+  # https://furlough.merecomplexities.com/elixir/phoenix/tutorial/2021/02/19/binary-websockets-with-elixir-phoenix.html
+
   @impl true
   def join("drawing:lobby", _payload, socket) do
     current_state = FeaturesAgent.get_state()
-    {:ok, %{"state" => current_state}, socket}
+    #update_list = if is_binary(current_state), do: :erlang.binary_to_list(current_state), else: current_state
+    #current_state = nil
+    #{:ok, %{"state" => current_state}, socket}
+    {:ok, {:binary, current_state}, socket}
   end
 
   # @impl true
@@ -20,8 +27,19 @@ defmodule CollaborativeDrawingWeb.DrawingChannel do
   @impl true
   def handle_in("yjs-update", %{"update" => update}, socket) do
     # Ensure update is treated as binary
+    # IO.inspect(update, label: "Incoming update")
+    # cond do
+    #   is_binary(update) -> IO.puts("Type of update: binary")
+    #   is_list(update) -> IO.puts("Type of update: list")
+    #   is_map(update) -> IO.puts("Type of update: map")
+    #   is_integer(update) -> IO.puts("Type of update: integer")
+    #   is_float(update) -> IO.puts("Type of update: float")
+    #   is_tuple(update) -> IO.puts("Type of update: tuple")
+    #   true -> IO.puts("Type of update: unknown")
+    # end
+
     update_binary = if is_list(update), do: :erlang.list_to_binary(update), else: update
-    IO.inspect(update_binary, label: "Incoming Update (Binary)")
+    #IO.inspect(update_binary, label: "Incoming Update (Binary)")
 
     # Apply the incoming update and store the new state
     FeaturesAgent.apply_update(update_binary)

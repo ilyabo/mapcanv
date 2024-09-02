@@ -14,7 +14,6 @@ const NOOP = () => {};
 const defaultHandlers = {onClick: NOOP, onDrag: NOOP, onEdit: NOOP};
 
 export function useDrawHandler(context: DrawHandlerContext): DrawHandlers {
-  const {mapRef} = context;
   const drawingMode = useAppStore((state) => state.mode);
   const isPanning = useAppStore((state) => state.isPanning);
   const setDrawingMode = useAppStore((state) => state.setDrawingMode);
@@ -27,7 +26,12 @@ export function useDrawHandler(context: DrawHandlerContext): DrawHandlers {
     const onKeyDown = (evt) =>
       evt.key === "Escape" && setDrawingMode(DrawingMode.SELECT);
     window.addEventListener("keydown", onKeyDown);
-    return () => window.removeEventListener("keydown", onKeyDown);
+    const onWindowBlur = () => setDrawingMode(DrawingMode.SELECT);
+    window.addEventListener("blur", onWindowBlur);
+    return () => {
+      window.removeEventListener("keydown", onKeyDown);
+      window.removeEventListener("blur", onWindowBlur);
+    };
   }, []);
 
   if (isPanning) {
@@ -62,8 +66,6 @@ function useSelectHandlers(context: DrawHandlerContext): DrawHandlers {
         // Clicking on a guide, e.g. a midpoint
         return;
       }
-      // console.log("select", object, index);
-      // setSelection(object ? [object.id] : undefined);
       if (object) {
         setSelection([object.id]);
       } else {

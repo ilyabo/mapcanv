@@ -44,8 +44,6 @@ export const useAppStore = create<DrawingState>((set, get) => ({
   setHexResolution: (resolution) => set({hexResolution: resolution}),
   setDrawingMode: (mode) => set({mode}),
   setPanning: (isPanning) => set({isPanning}),
-  // setFeatures: (features) =>
-  //   set({features: Array.isArray(features) ? features : []}),
 
   setSelection: (ids) => {
     set({selectedIds: ids});
@@ -79,9 +77,10 @@ export const useAppStore = create<DrawingState>((set, get) => ({
       })
       .receive("ok", (resp) => {
         console.log("Joined successfully");
+        2;
         console.log("resp", resp);
-        if (resp.state) {
-          const initialState = new Uint8Array(resp.state);
+        if (resp) {
+          const initialState = new Uint8Array(resp);
           Y.applyUpdate(ydoc, initialState); // Apply the initial state to the Yjs document
         } else {
           console.log("No initial state");
@@ -92,16 +91,16 @@ export const useAppStore = create<DrawingState>((set, get) => ({
       });
 
     yfeatures.observe((event) => {
-      event.changes.keys.forEach((change, key) => {
-        if (change.action === "add") {
-          console.log(`Feature added: ${key}`, yfeatures.get(key));
-        } else if (change.action === "update") {
-          console.log(`Feature updated: ${key}`, yfeatures.get(key));
-        } else if (change.action === "delete") {
-          console.log(`Feature deleted: ${key}`);
-        }
-      });
-      useAppStore.getState().updateFeaturesFromY();
+      // event.changes.keys.forEach((change, key) => {
+      //   if (change.action === "add") {
+      //     console.log(`Feature added: ${key}`, yfeatures.get(key));
+      //   } else if (change.action === "update") {
+      //     console.log(`Feature updated: ${key}`, yfeatures.get(key));
+      //   } else if (change.action === "delete") {
+      //     console.log(`Feature deleted: ${key}`);
+      //   }
+      // });
+      get().updateFeaturesFromY();
     });
 
     ydoc.on("update", (update) => {
