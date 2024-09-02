@@ -8,9 +8,6 @@ import * as Y from "yjs";
 
 export type PolygonFeature = FeatureOf<Polygon>;
 
-const ydoc = new Y.Doc();
-const yfeatures = ydoc.getMap<PolygonFeature>("features");
-
 interface DrawingState {
   features: PolygonFeature[];
   isPanning: boolean;
@@ -19,7 +16,6 @@ interface DrawingState {
   setColor: (color: string) => void;
   setSelection: (ids: string[] | undefined) => void;
   initialized: boolean;
-  // setFeatures: (features: PolygonFeature[]) => void;
   setPanning: (isPanning: boolean) => void;
   addOrUpdateFeatures: (feature: PolygonFeature[]) => void;
   clear: () => void;
@@ -28,90 +24,92 @@ interface DrawingState {
   setDrawingMode: (mode: DrawingMode) => void;
   hexResolution: number;
   setHexResolution: (resolution: number) => void;
-  updateFeaturesFromY: () => void;
 }
 
-export const useAppStore = create<DrawingState>((set, get) => ({
-  features: [], // Array of features extracted from yarray for local use (rendering)
-  color: rgb(interpolateRainbow(Math.random())).formatHex(),
-  initialized: false,
-  selectedIds: undefined,
-  mode: DrawingMode.SELECT,
-  selectedIndexes: undefined,
-  hexResolution: 10,
-  isPanning: false,
-  setColor: (color) => set({color}),
-  setHexResolution: (resolution) => set({hexResolution: resolution}),
-  setDrawingMode: (mode) => set({mode}),
-  setPanning: (isPanning) => set({isPanning}),
+export const useAppStore = create<DrawingState>((set, get) => {
+  const ydoc = new Y.Doc();
+  const yfeatures = ydoc.getMap<PolygonFeature>("features");
 
-  setSelection: (ids) => {
-    set({selectedIds: ids});
-  },
+  return {
+    features: [], // Array of features extracted from yarray for local use (rendering)
+    color: rgb(interpolateRainbow(Math.random())).formatHex(),
+    initialized: false,
+    selectedIds: undefined,
+    mode: DrawingMode.SELECT,
+    selectedIndexes: undefined,
+    hexResolution: 10,
+    isPanning: false,
+    setColor: (color) => set({color}),
+    setHexResolution: (resolution) => set({hexResolution: resolution}),
+    setDrawingMode: (mode) => set({mode}),
+    setPanning: (isPanning) => set({isPanning}),
+    setSelection: (ids) => {
+      set({selectedIds: ids});
+    },
 
-  // Method to update features from yarray
-  updateFeaturesFromY: () => {
-    const features = Array.from(yfeatures.values());
-    return set({features});
-  },
+    clear: () => yfeatures.clear(),
 
-  addOrUpdateFeatures: (features) => {
-    for (const feature of features) {
-      if (!feature.id) {
-        console.error("Feature must have an id", feature);
-        continue;
-      }
-      yfeatures.set(String(feature.id), feature);
-    }
-  },
-
-  clear: () => set({features: []}),
-
-  initialize: () => {
-    if (get().initialized) return;
-    set({initialized: true});
-    channel
-      .join()
-      .receive("error", (resp) => {
-        console.log("Unable to join channel", resp);
-      })
-      .receive("ok", (resp) => {
-        console.log("Joined successfully");
-        if (resp) {
-          const initialState = new Uint8Array(resp);
-          Y.applyUpdate(ydoc, initialState); // Apply the initial state to the Yjs document
-        } else {
-          console.log("No initial state");
+    addOrUpdateFeatures: (features) => {
+      for (const feature of features) {
+        if (!feature.id) {
+          console.error("Feature must have an id", feature);
+          continue;
         }
-      })
-      .receive("error", ({reason}) => {
-        console.error("failed to join", reason);
+        // Update the yarray with the new feature
+        yfeatures.set(String(feature.id), feature);
+      }
+    },
+
+    initialize: () => {
+      if (get().initialized) return;
+
+      channel
+        .join()
+        .receive("error", (resp) => {
+          console.log("Unable to join channel", resp);
+        })
+        .receive("ok", (resp) => {
+          console.log("Joined successfully");
+          if (resp) {
+            const initialState = new Uint8Array(resp);
+            Y.applyUpdate(ydoc, initialState); // Apply the initial state to the Yjs document
+          } else {
+            console.log("No initial state");
+          }
+        })
+        .receive("error", ({reason}) => {
+          console.error("failed to join", reason);
+        });
+
+      yfeatures.observe((event) => {
+        // Update the local features array by extracting the values from the yarray
+        return set({features: Array.from(yfeatures.values())});
+
+        // event.changes.keys.forEach((change, key) => {
+        //   if (change.action === "add") {
+        //     console.log(`Feature added: ${key}`, yfeatures.get(key));
+        //   } else if (change.action === "update") {
+        //     console.log(`Feature updated: ${key}`, yfeatures.get(key));
+        //   } else if (change.action === "delete") {
+        //     console.log(`Feature deleted: ${key}`);
+        //   }
+        // });
       });
 
-    yfeatures.observe((event) => {
-      // event.changes.keys.forEach((change, key) => {
-      //   if (change.action === "add") {
-      //     console.log(`Feature added: ${key}`, yfeatures.get(key));
-      //   } else if (change.action === "update") {
-      //     console.log(`Feature updated: ${key}`, yfeatures.get(key));
-      //   } else if (change.action === "delete") {
-      //     console.log(`Feature deleted: ${key}`);
-      //   }
-      // });
-      get().updateFeaturesFromY();
-    });
+      ydoc.on("update", (update: Uint8Array, origin) => {
+        if (origin !== "remote") {
+          // Avoid feedback loop by checking if the update is coming from "remote"
+          channel.push("yjs-update", update.buffer);
+        }
+      });
 
-    ydoc.on("update", (update: Uint8Array, origin) => {
-      if (origin !== "remote") {
-        // Avoid feedback loop by checking if the update is coming from "remote"
-        channel.push("yjs-update", update.buffer);
-      }
-    });
+      channel.on("yjs-update", (payload: ArrayBuffer) => {
+        const update = new Uint8Array(payload);
+        // Apply the update to the Yjs document
+        Y.applyUpdate(ydoc, update, "remote"); // Mark the update as coming from "remote"
+      });
 
-    channel.on("yjs-update", (payload: ArrayBuffer) => {
-      const update = new Uint8Array(payload);
-      // Apply the update to the Yjs document
-      Y.applyUpdate(ydoc, update, "remote"); // Mark the update as coming from "remote"
-    });
-  },
-}));
+      set({initialized: true});
+    },
+  };
+});
