@@ -16,6 +16,8 @@ interface DrawingState {
   selectedIds: string[] | undefined;
   setColor: (color: string) => void;
   setSelectedIds: (ids: string[] | undefined) => void;
+  undo: () => void;
+  redo: () => void;
   initialized: boolean;
   setPanning: (isPanning: boolean) => void;
   addOrUpdateFeatures: (feature: PolygonFeature[]) => void;
@@ -31,6 +33,9 @@ interface DrawingState {
 export const useAppStore = create<DrawingState>((set, get) => {
   const ydoc = new Y.Doc();
   const yfeatures = ydoc.getMap<PolygonFeature>("features");
+
+  // We'll only start capturing undo/redo after the initial state is applied when joining the channel
+  let yfeaturesUndo: Y.UndoManager | undefined = undefined;
 
   const socket = new Socket("/socket" /*{params: {token: window.userToken}}*/);
   // @ts-ignore
@@ -62,6 +67,7 @@ export const useAppStore = create<DrawingState>((set, get) => {
           if (resp) {
             const initialState = new Uint8Array(resp);
             Y.applyUpdate(ydoc, initialState); // Apply the initial state to the Yjs document
+            yfeaturesUndo = new Y.UndoManager(yfeatures);
           } else {
             console.log("No initial state");
           }
@@ -111,6 +117,10 @@ export const useAppStore = create<DrawingState>((set, get) => {
         }));
       }
     },
+
+    undo: () => yfeaturesUndo?.undo(),
+    redo: () => yfeaturesUndo?.redo(),
+
     setHexResolution: (resolution) => set({hexResolution: resolution}),
     setDrawingMode: (mode) => set({mode}),
     setPanning: (isPanning) => set({isPanning}),

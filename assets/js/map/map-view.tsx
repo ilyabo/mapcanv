@@ -21,7 +21,7 @@ import {useControl} from "react-map-gl/maplibre";
 import {useDrawHandler} from "../drawing/use-draw-handlers";
 import {useAppStore} from "../store/store";
 import {colorToRGBA, findLastLabelLayerId} from "../store/utils";
-import {useModeKeyStrokes} from "../drawing/use-mode-keystrokes";
+import {useKeyStrokes} from "../drawing/use-key-strokes";
 import {usePanning} from "../drawing/use-panning";
 
 const defaultColor: [number, number, number, number] = [150, 150, 150, 200];
@@ -57,7 +57,7 @@ export const MapView: FC = () => {
   const mapRef = useRef<MapRef>(null);
   const [beforeId, setBeforeId] = useState();
 
-  useModeKeyStrokes();
+  useKeyStrokes();
   usePanning();
 
   const drawHandlers = useDrawHandler({mapRef: mapRef.current});
