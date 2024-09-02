@@ -3,15 +3,22 @@ import {DrawHandlerContext, DrawHandlers, DrawingMode} from "./types";
 import {
   DrawPolygonMode,
   ModifyMode,
+  TranslateMode,
   ViewMode,
 } from "@deck.gl-community/editable-layers";
 import {cellToBoundary, latLngToCell} from "h3-js";
 import {useAppStore} from "../store/store";
 import {createId} from "@paralleldrive/cuid2";
-import {useEffect} from "react";
+import {useEffect, useState} from "react";
 
 const NOOP = () => {};
-const defaultHandlers = {onClick: NOOP, onDrag: NOOP, onEdit: NOOP};
+const defaultHandlers = {
+  onClick: NOOP,
+  onDrag: NOOP,
+  onDragStart: NOOP,
+  onDragEnd: NOOP,
+  onEdit: NOOP,
+};
 
 export function useDrawHandler(context: DrawHandlerContext): DrawHandlers {
   const drawingMode = useAppStore((state) => state.mode);
@@ -19,6 +26,7 @@ export function useDrawHandler(context: DrawHandlerContext): DrawHandlers {
   const setDrawingMode = useAppStore((state) => state.setDrawingMode);
   const drawHandlers = {
     [DrawingMode.SELECT]: useSelectHandlers(context),
+    [DrawingMode.MOVE]: useMoveHandlers(context),
     [DrawingMode.DRAW_POLYGON]: usePolygonHandlers(context),
     [DrawingMode.DRAW_HEXAGON]: useHexagonHandlers(context),
   } satisfies Record<DrawingMode, DrawHandlers>;
@@ -47,10 +55,11 @@ export function useDrawHandler(context: DrawHandlerContext): DrawHandlers {
 
 function useSelectHandlers(context: DrawHandlerContext): DrawHandlers {
   const selectedIds = useAppStore((state) => state.selectedIds);
-  const setSelection = useAppStore((state) => state.setSelectedIds);
+  const setSelectedIds = useAppStore((state) => state.setSelectedIds);
   const addOrUpdateFeatures = useAppStore((state) => state.addOrUpdateFeatures);
   useEffect(() => {
-    const onKeyDown = (evt) => evt.key === "Escape" && setSelection(undefined);
+    const onKeyDown = (evt) =>
+      evt.key === "Escape" && setSelectedIds(undefined);
     window.addEventListener("keydown", onKeyDown);
     return () => window.removeEventListener("keydown", onKeyDown);
   }, []);
@@ -67,13 +76,12 @@ function useSelectHandlers(context: DrawHandlerContext): DrawHandlers {
         return;
       }
       if (object) {
-        setSelection([object.id]);
+        setSelectedIds([object.id]);
       } else {
-        setSelection(undefined);
+        setSelectedIds(undefined);
       }
     },
     onEdit: ({updatedData, editType, editContext}) => {
-      // console.log({updatedData, editType, editContext});
       const {featureIndexes} = editContext;
       if (featureIndexes && featureIndexes.length > 0) {
         addOrUpdateFeatures(
@@ -84,6 +92,33 @@ function useSelectHandlers(context: DrawHandlerContext): DrawHandlers {
     cursor: "pointer",
     editMode: selectedIds ? ModifyMode : ViewMode,
     enableDragPan: selectedIds ? false : true,
+  };
+}
+
+function useMoveHandlers(context: DrawHandlerContext): DrawHandlers {
+  const setSelectedIds = useAppStore((state) => state.setSelectedIds);
+  const addOrUpdateFeatures = useAppStore((state) => state.addOrUpdateFeatures);
+  return {
+    ...defaultHandlers,
+    onClick: (evt) => {
+      const {object} = evt;
+      if (object) {
+        setSelectedIds([object.id]);
+      } else {
+        setSelectedIds(undefined);
+      }
+    },
+    onEdit: ({updatedData, editContext}) => {
+      const {featureIndexes} = editContext;
+      if (featureIndexes && featureIndexes.length > 0) {
+        addOrUpdateFeatures(
+          featureIndexes.map((index) => updatedData.features[index])
+        );
+      }
+    },
+    cursor: "move",
+    editMode: TranslateMode,
+    enableDragPan: false,
   };
 }
 

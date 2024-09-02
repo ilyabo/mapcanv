@@ -135,6 +135,8 @@ export const MapView: FC = () => {
         getCursor={() => drawHandlers.cursor}
         onClick={drawHandlers.onClick}
         onDrag={drawHandlers.onDrag}
+        onDragStart={drawHandlers.onDragStart}
+        onDragEnd={drawHandlers.onDragEnd}
         interleaved
       />
     </ReactMapGl>
