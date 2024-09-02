@@ -1,11 +1,11 @@
-import {forwardRef, useEffect, useMemo, useRef, useState} from 'react';
-import {HexColorPicker} from 'react-colorful';
-import {cn} from './utils';
-import type {ButtonProps} from './button';
-import {Button} from './button';
-import {Input} from './input';
-import React from 'react';
-import {Popover, PopoverContent, PopoverTrigger} from './popover';
+import {forwardRef, useEffect, useMemo, useRef, useState} from "react";
+import {HexColorPicker} from "react-colorful";
+import {cn} from "./utils";
+import type {ButtonProps} from "./button";
+import {Button} from "./button";
+import {Input} from "./input";
+import React from "react";
+import {Popover, PopoverContent, PopoverTrigger} from "./popover";
 
 export interface ColorPickerProps {
   value: string;
@@ -15,7 +15,7 @@ export interface ColorPickerProps {
 
 export const ColorPicker = forwardRef<
   HTMLInputElement,
-  Omit<ButtonProps, 'value' | 'onChange' | 'onBlur'> & ColorPickerProps
+  Omit<ButtonProps, "value" | "onChange" | "onBlur"> & ColorPickerProps
 >(
   (
     {disabled, value, onChange, onBlur, name, className, ...props},
@@ -25,7 +25,7 @@ export const ColorPicker = forwardRef<
     const [open, setOpen] = useState(false);
 
     const parsedValue = useMemo(() => {
-      return value || '#FFFFFF';
+      return value || "#FFFFFF";
     }, [value]);
 
     return (
@@ -33,7 +33,7 @@ export const ColorPicker = forwardRef<
         <PopoverTrigger asChild disabled={disabled} onBlur={onBlur}>
           <Button
             {...props}
-            className={cn('block', className)}
+            className={cn("block", className)}
             name={name}
             onClick={() => {
               setOpen(true);
@@ -47,7 +47,7 @@ export const ColorPicker = forwardRef<
             <div />
           </Button>
         </PopoverTrigger>
-        <PopoverContent className="w-full">
+        <PopoverContent className="w-full" side="right">
           <HexColorPicker color={parsedValue} onChange={onChange} />
           <Input
             maxLength={7}
@@ -68,7 +68,7 @@ function useForwardedRef<T>(ref: React.ForwardedRef<T>) {
 
   useEffect(() => {
     if (!ref) return;
-    if (typeof ref === 'function') {
+    if (typeof ref === "function") {
       ref(innerRef.current);
     } else {
       ref.current = innerRef.current;

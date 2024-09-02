@@ -1,8 +1,17 @@
-@import 'tailwindcss/base';
-@import 'tailwindcss/components';
-@import 'tailwindcss/utilities';
+@import "tailwindcss/base";
+@import "tailwindcss/components";
+@import "tailwindcss/utilities";
 
-@import 'maplibre-gl/dist/maplibre-gl.css';
+@import "maplibre-gl/dist/maplibre-gl.css";
+
+html,
+body {
+  /* Prevent overscroll bounce */
+  overflow: hidden;
+  height: 100%;
+  margin: 0;
+  padding: 0;
+}
 
 /* This file is for your main application CSS */
 @layer base {
@@ -79,6 +88,6 @@
   }
   body {
     @apply bg-background text-foreground;
-    font-feature-settings: 'rlig' 1, 'calt' 1;
+    font-feature-settings: "rlig" 1, "calt" 1;
   }
 }

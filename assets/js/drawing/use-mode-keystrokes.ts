@@ -1,7 +1,7 @@
 import {useState, useEffect} from "react";
 import {MapRef} from "react-map-gl/dist/esm/exports-maplibre";
 import {useAppStore} from "../store/store";
-import {KEYSTROKES_BY_MODE, DrawingMode} from "./types";
+import {DRAWING_MODE_KEYSTROKES, DrawingMode} from "./types";
 
 /**
  * Add keyboard event listener for drawing modes
@@ -11,8 +11,8 @@ export function useModeKeyStrokes() {
 
   useEffect(() => {
     const onKeyDown = (evt) => {
-      for (const mode in KEYSTROKES_BY_MODE) {
-        if (evt.key === KEYSTROKES_BY_MODE[mode]) {
+      for (const [keystroke, mode] of Object.entries(DRAWING_MODE_KEYSTROKES)) {
+        if (evt.key === keystroke) {
           setDrawingMode(mode as DrawingMode);
           break;
         }

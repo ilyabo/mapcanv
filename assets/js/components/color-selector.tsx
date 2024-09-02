@@ -1,6 +1,6 @@
 import {FC} from "react";
 export type ColorSelectorProps = {};
-import {ColorPicker} from "../ui/color-picker";
+import {ColorPicker} from "./ui/color-picker";
 import React from "react";
 import {useAppStore} from "../store/store";
 

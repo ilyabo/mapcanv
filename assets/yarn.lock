@@ -1388,15 +1388,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@radix-ui/react-icons@npm:^1.3.0":
-  version: 1.3.0
-  resolution: "@radix-ui/react-icons@npm:1.3.0"
-  peerDependencies:
-    react: ^16.x || ^17.x || ^18.x
-  checksum: 10c0/581657680e43fd13ff06e01f963e3afa94671d4ce6c3fb126e2c70c993ab8650faa55286974032dbccfecca4db57308fb66d53771d765887e03600cddee84ae5
-  languageName: node
-  linkType: hard
-
 "@radix-ui/react-id@npm:1.0.1":
   version: 1.0.1
   resolution: "@radix-ui/react-id@npm:1.0.1"
@@ -4560,6 +4551,15 @@ __metadata:
   languageName: node
   linkType: hard
 
+"lucide-react@npm:^0.438.0":
+  version: 0.438.0
+  resolution: "lucide-react@npm:0.438.0"
+  peerDependencies:
+    react: ^16.5.1 || ^17.0.0 || ^18.0.0 || ^19.0.0-rc
+  checksum: 10c0/d5e9e9130e301b3231fffd3e5fab85975a7523fb5ab160a8125ad6937de713af46d0ac7a96c1ba532b9ff39a14d940aefa9ea41cb30123ff7f8ce88f44cfe2f1
+  languageName: node
+  linkType: hard
+
 "lz4js@npm:^0.2.0":
   version: 0.2.0
   resolution: "lz4js@npm:0.2.0"
@@ -5215,7 +5215,6 @@ __metadata:
     "@deck.gl/mapbox": "npm:^9.0.19"
     "@paralleldrive/cuid2": "npm:^2.2.2"
     "@radix-ui/react-dropdown-menu": "npm:^2.0.6"
-    "@radix-ui/react-icons": "npm:^1.3.0"
     "@radix-ui/react-popover": "npm:^1.0.7"
     "@radix-ui/react-slider": "npm:^1.1.2"
     "@radix-ui/react-slot": "npm:^1.0.2"
@@ -5227,6 +5226,7 @@ __metadata:
     d3: "npm:^7.9.0"
     deck.gl: "npm:^9.0.19"
     h3-js: "npm:^4.1.0"
+    lucide-react: "npm:^0.438.0"
     maplibre-gl: "npm:^4.4.0"
     phoenix: "npm:^1.7.12"
     react: "npm:^18.3.1"

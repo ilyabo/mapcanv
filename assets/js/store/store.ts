@@ -103,7 +103,7 @@ export const useAppStore = create<DrawingState>((set, get) => {
         // });
       });
 
-      ydoc.on("update", (update: Uint8Array, origin) => {
+      ydoc.on("update", (update: Uint8Array, origin: string) => {
         if (origin !== "remote") {
           // Avoid feedback loop by checking if the update is coming from "remote"
           channel.push("yjs-update", update.buffer);
