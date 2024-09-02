@@ -23,15 +23,9 @@ defmodule CollaborativeDrawing.FeaturesAgent do
   # Applies an update to the current state
   def apply_update(update) when is_binary(update) do
     Agent.get_and_update(__MODULE__, fn state ->
-      # IO.inspect(update, label: "Incoming update")
-      new_state =
-        if state do
-          YsCrdt.merge_crdt(state, update)
-        else
-          empty_doc = YsCrdt.new_doc()
-          YsCrdt.merge_crdt(empty_doc, update)
-        end
-
+      new_state = YsCrdt.merge_crdt(state, update)
+      # The first element of the tuple is what get_and_update/2 will return as the result of the operation.
+	    # The second element of the tuple is the new state of the agent.
       {new_state, new_state}
     end)
   end
