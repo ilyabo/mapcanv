@@ -13,12 +13,9 @@ defmodule CollaborativeDrawing.FeaturesAgent do
   def get_state() do
     Agent.get_and_update(__MODULE__, fn
       nil ->
-        # new_doc = nil
         new_doc = YsCrdt.new_doc()
-        # IO.inspect(new_doc, label: "Initialized new document")
         {new_doc, new_doc}
       state ->
-        # IO.inspect(state, label: "get_state Returning existing document")
         {state, state}
     end)
   end
@@ -32,7 +29,6 @@ defmodule CollaborativeDrawing.FeaturesAgent do
           YsCrdt.merge_crdt(state, update)
         else
           empty_doc = YsCrdt.new_doc()
-          # IO.inspect(empty_doc, label: "New document in apply_update")
           YsCrdt.merge_crdt(empty_doc, update)
         end
 
@@ -40,10 +36,4 @@ defmodule CollaborativeDrawing.FeaturesAgent do
     end)
   end
 
-
-  # Fallback clause to handle lists and convert them to binaries
-  def apply_update(update) when is_list(update) do
-    IO.inspect(update, label: "Incoming update as List")
-    apply_update(:erlang.list_to_binary(update))
-  end
 end

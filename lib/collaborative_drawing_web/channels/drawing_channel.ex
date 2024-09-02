@@ -2,30 +2,18 @@ defmodule CollaborativeDrawingWeb.DrawingChannel do
   use CollaborativeDrawingWeb, :channel
   alias CollaborativeDrawing.FeaturesAgent
 
-  # TODO: send binary
-  # https://github.com/paulanthonywilson/binary-websockets-example?tab=readme-ov-file
-  # https://furlough.merecomplexities.com/elixir/phoenix/tutorial/2021/02/19/binary-websockets-with-elixir-phoenix.html
-
   @impl true
   def join("drawing:lobby", _payload, socket) do
     current_state = FeaturesAgent.get_state()
-    #update_list = if is_binary(current_state), do: :erlang.binary_to_list(current_state), else: current_state
-    #current_state = nil
-    #{:ok, %{"state" => current_state}, socket}
     {:ok, {:binary, current_state}, socket}
   end
 
-  # @impl true
-  # @spec handle_in(<<_::32, _::_*48>>, map(), Phoenix.Socket.t()) :: {:noreply, Phoenix.Socket.t()}
-  # def handle_in("draw", %{"feature" => feature} = payload, socket) do
-  #   CollaborativeDrawing.FeaturesAgent.add_or_update_feature(feature)
-  #   IO.inspect(payload, label: "Broadcasting payload")
-  #   broadcast(socket, "draw", payload)
-  #   {:noreply, socket}
-  # end
-
   @impl true
   def handle_in("yjs-update", %{"update" => update}, socket) do
+    # TODO: binary
+    # https://github.com/paulanthonywilson/binary-websockets-example?tab=readme-ov-file
+    # https://furlough.merecomplexities.com/elixir/phoenix/tutorial/2021/02/19/binary-websockets-with-elixir-phoenix.html
+
     # Ensure update is treated as binary
     # IO.inspect(update, label: "Incoming update")
     # cond do
