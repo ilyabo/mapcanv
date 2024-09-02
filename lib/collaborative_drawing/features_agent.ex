@@ -14,26 +14,25 @@ defmodule CollaborativeDrawing.FeaturesAgent do
     Agent.get_and_update(__MODULE__, fn
       nil ->
         # new_doc = nil
-        new_doc = YsCrdt.merge_crdt(YsCrdt.new_doc(), YsCrdt.new_doc())
-        IO.inspect(new_doc, label: "Initialized new document")
+        new_doc = YsCrdt.new_doc()
+        # IO.inspect(new_doc, label: "Initialized new document")
         {new_doc, new_doc}
       state ->
-        IO.inspect(state, label: "get_state Returning existing document")
-        new_state = YsCrdt.merge_crdt(YsCrdt.new_doc(), state)
-        {new_state, new_state}
+        # IO.inspect(state, label: "get_state Returning existing document")
+        {state, state}
     end)
   end
 
   # Applies an update to the current state
   def apply_update(update) when is_binary(update) do
     Agent.get_and_update(__MODULE__, fn state ->
-      IO.inspect(update, label: "Incoming update")
+      # IO.inspect(update, label: "Incoming update")
       new_state =
         if state do
           YsCrdt.merge_crdt(state, update)
         else
           empty_doc = YsCrdt.new_doc()
-          IO.inspect(empty_doc, label: "New document in apply_update")
+          # IO.inspect(empty_doc, label: "New document in apply_update")
           YsCrdt.merge_crdt(empty_doc, update)
         end
 
