@@ -1,5 +1,5 @@
-defmodule CollaborativeDrawingWeb.PageController do
-  use CollaborativeDrawingWeb, :controller
+defmodule MapCanvWeb.PageController do
+  use MapCanvWeb, :controller
 
   def home(conn, _params) do
     # The home page is often custom made,

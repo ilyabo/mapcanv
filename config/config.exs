@@ -7,18 +7,18 @@
 # General application configuration
 import Config
 
-config :collaborative_drawing,
+config :mapcanv,
   generators: [timestamp_type: :utc_datetime]
 
 # Configures the endpoint
-config :collaborative_drawing, CollaborativeDrawingWeb.Endpoint,
+config :mapcanv, MapCanvWeb.Endpoint,
   url: [host: "localhost"],
   adapter: Bandit.PhoenixAdapter,
   render_errors: [
-    formats: [html: CollaborativeDrawingWeb.ErrorHTML, json: CollaborativeDrawingWeb.ErrorJSON],
+    formats: [html: MapCanvWeb.ErrorHTML, json: MapCanvWeb.ErrorJSON],
     layout: false
   ],
-  pubsub_server: CollaborativeDrawing.PubSub,
+  pubsub_server: MapCanv.PubSub,
   live_view: [signing_salt: "U4/2nfRM"]
 
 # Configures the mailer
@@ -28,12 +28,12 @@ config :collaborative_drawing, CollaborativeDrawingWeb.Endpoint,
 #
 # For production it's recommended to configure a different adapter
 # at the `config/runtime.exs`.
-config :collaborative_drawing, CollaborativeDrawing.Mailer, adapter: Swoosh.Adapters.Local
+config :mapcanv, MapCanv.Mailer, adapter: Swoosh.Adapters.Local
 
 # Configure esbuild (the version is required)
 config :esbuild,
   version: "0.17.11",
-  collaborative_drawing: [
+  mapcanv: [
     args:
       # TODO: target es2022 might be too high for some browsers, consider changing it to es2017
       #       es2022 was chosen to avoid loader.gl build errors
@@ -45,7 +45,7 @@ config :esbuild,
 # Configure tailwind (the version is required)
 config :tailwind,
   version: "3.4.0",
-  collaborative_drawing: [
+  mapcanv: [
     args: ~w(
       --config=tailwind.config.js
       --input=css/app.css

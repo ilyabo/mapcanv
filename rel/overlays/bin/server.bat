@@ -1,2 +1,2 @@
 set PHX_SERVER=true
-call "%~dp0\collaborative_drawing" start
+call "%~dp0\mapcanv" start

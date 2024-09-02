@@ -1,4 +1,4 @@
-defmodule CollaborativeDrawingWeb.CoreComponents do
+defmodule MapCanvWeb.CoreComponents do
   @moduledoc """
   Provides core UI components.
 
@@ -17,7 +17,7 @@ defmodule CollaborativeDrawingWeb.CoreComponents do
   use Phoenix.Component
 
   alias Phoenix.LiveView.JS
-  import CollaborativeDrawingWeb.Gettext
+  import MapCanvWeb.Gettext
 
   @doc """
   Renders a modal.
@@ -661,9 +661,9 @@ defmodule CollaborativeDrawingWeb.CoreComponents do
     # with our gettext backend as first argument. Translations are
     # available in the errors.po file (as we use the "errors" domain).
     if count = opts[:count] do
-      Gettext.dngettext(CollaborativeDrawingWeb.Gettext, "errors", msg, msg, count, opts)
+      Gettext.dngettext(MapCanvWeb.Gettext, "errors", msg, msg, count, opts)
     else
-      Gettext.dgettext(CollaborativeDrawingWeb.Gettext, "errors", msg, opts)
+      Gettext.dgettext(MapCanvWeb.Gettext, "errors", msg, opts)
     end
   end
 

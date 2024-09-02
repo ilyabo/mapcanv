@@ -1,9 +1,9 @@
-defmodule CollaborativeDrawing.MixProject do
+defmodule MapCanv.MixProject do
   use Mix.Project
 
   def project do
     [
-      app: :collaborative_drawing,
+      app: :mapcanv,
       version: "0.1.0",
       elixir: "~> 1.14",
       elixirc_paths: elixirc_paths(Mix.env()),
@@ -18,7 +18,7 @@ defmodule CollaborativeDrawing.MixProject do
   # Type `mix help compile.app` for more information.
   def application do
     [
-      mod: {CollaborativeDrawing.Application, []},
+      mod: {MapCanv.Application, []},
       extra_applications: [:logger, :runtime_tools]
     ]
   end
@@ -78,10 +78,10 @@ defmodule CollaborativeDrawing.MixProject do
     [
       setup: ["deps.get", "assets.setup", "assets.build"],
       "assets.setup": ["tailwind.install --if-missing", "esbuild.install --if-missing"],
-      "assets.build": ["tailwind collaborative_drawing", "esbuild collaborative_drawing"],
+      "assets.build": ["tailwind mapcanv", "esbuild mapcanv"],
       "assets.deploy": [
-        "tailwind collaborative_drawing --minify",
-        "esbuild collaborative_drawing --minify",
+        "tailwind mapcanv --minify",
+        "esbuild mapcanv --minify",
         "phx.digest"
       ]
     ]

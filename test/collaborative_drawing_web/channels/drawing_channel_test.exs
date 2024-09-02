@@ -1,11 +1,11 @@
-defmodule CollaborativeDrawingWeb.DrawingChannelTest do
-  use CollaborativeDrawingWeb.ChannelCase
+defmodule MapCanvWeb.DrawingChannelTest do
+  use MapCanvWeb.ChannelCase
 
   setup do
     {:ok, _, socket} =
-      CollaborativeDrawingWeb.UserSocket
+      MapCanvWeb.UserSocket
       |> socket("user_id", %{some: :assign})
-      |> subscribe_and_join(CollaborativeDrawingWeb.DrawingChannel, "drawing:lobby")
+      |> subscribe_and_join(MapCanvWeb.DrawingChannel, "drawing:lobby")
 
     %{socket: socket}
   end

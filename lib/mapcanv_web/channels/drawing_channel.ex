@@ -1,6 +1,6 @@
-defmodule CollaborativeDrawingWeb.DrawingChannel do
-  use CollaborativeDrawingWeb, :channel
-  alias CollaborativeDrawing.FeaturesAgent
+defmodule MapCanvWeb.DrawingChannel do
+  use MapCanvWeb, :channel
+  alias MapCanv.FeaturesAgent
 
   @impl true
   def join("drawing:lobby", _payload, socket) do

@@ -1,10 +1,10 @@
-defmodule CollaborativeDrawingWeb.PageHTML do
+defmodule MapCanvWeb.PageHTML do
   @moduledoc """
   This module contains pages rendered by PageController.
 
   See the `page_html` directory for all templates available.
   """
-  use CollaborativeDrawingWeb, :html
+  use MapCanvWeb, :html
 
   embed_templates "page_html/*"
 end

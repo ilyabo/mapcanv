@@ -1,6 +1,6 @@
-defmodule CollaborativeDrawing do
+defmodule MapCanv do
   @moduledoc """
-  CollaborativeDrawing keeps the contexts that define your domain
+  MapCanv keeps the contexts that define your domain
   and business logic.
 
   Contexts are also responsible for managing your data, regardless

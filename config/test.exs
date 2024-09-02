@@ -2,13 +2,13 @@ import Config
 
 # We don't run a server during test. If one is required,
 # you can enable the server option below.
-config :collaborative_drawing, CollaborativeDrawingWeb.Endpoint,
+config :mapcanv, MapCanvWeb.Endpoint,
   http: [ip: {127, 0, 0, 1}, port: 4002],
   secret_key_base: "ERIAfbCwWrkj2c6WFnYUGEKOEn+8aB4dwMVKJeUPx6LT6v6CegIGsA+m6QG/Lb6U",
   server: false
 
 # In test we don't send emails.
-config :collaborative_drawing, CollaborativeDrawing.Mailer, adapter: Swoosh.Adapters.Test
+config :mapcanv, MapCanv.Mailer, adapter: Swoosh.Adapters.Test
 
 # Disable swoosh api client as it is only required for production adapters.
 config :swoosh, :api_client, false

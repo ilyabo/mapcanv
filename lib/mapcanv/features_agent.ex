@@ -1,4 +1,4 @@
-defmodule CollaborativeDrawing.FeaturesAgent do
+defmodule MapCanv.FeaturesAgent do
   use Agent
 
   alias YsCrdt

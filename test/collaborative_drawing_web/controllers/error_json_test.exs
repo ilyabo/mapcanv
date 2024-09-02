@@ -1,12 +1,12 @@
-defmodule CollaborativeDrawingWeb.ErrorJSONTest do
-  use CollaborativeDrawingWeb.ConnCase, async: true
+defmodule MapCanvWeb.ErrorJSONTest do
+  use MapCanvWeb.ConnCase, async: true
 
   test "renders 404" do
-    assert CollaborativeDrawingWeb.ErrorJSON.render("404.json", %{}) == %{errors: %{detail: "Not Found"}}
+    assert MapCanvWeb.ErrorJSON.render("404.json", %{}) == %{errors: %{detail: "Not Found"}}
   end
 
   test "renders 500" do
-    assert CollaborativeDrawingWeb.ErrorJSON.render("500.json", %{}) ==
+    assert MapCanvWeb.ErrorJSON.render("500.json", %{}) ==
              %{errors: %{detail: "Internal Server Error"}}
   end
 end

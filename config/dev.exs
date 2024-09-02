@@ -6,7 +6,7 @@ import Config
 # The watchers configuration can be used to run external
 # watchers to your application. For example, we can use it
 # to bundle .js and .css sources.
-config :collaborative_drawing, CollaborativeDrawingWeb.Endpoint,
+config :mapcanv, MapCanvWeb.Endpoint,
   # Binding to loopback ipv4 address prevents access from other machines.
   # Change to `ip: {0, 0, 0, 0}` to allow access from other machines.
   http: [ip: {127, 0, 0, 1}, port: 4000],
@@ -16,8 +16,8 @@ config :collaborative_drawing, CollaborativeDrawingWeb.Endpoint,
   secret_key_base: "cmvnlKtC1gpcmRq64004qjKcNt0VWAM5ncSOUnlatWA99ceICUV36ouckuk2at/8",
   watchers: [
     esbuild:
-      {Esbuild, :install_and_run, [:collaborative_drawing, ~w(--sourcemap=inline --watch)]},
-    tailwind: {Tailwind, :install_and_run, [:collaborative_drawing, ~w(--watch)]}
+      {Esbuild, :install_and_run, [:mapcanv, ~w(--sourcemap=inline --watch)]},
+    tailwind: {Tailwind, :install_and_run, [:mapcanv, ~w(--watch)]}
   ]
 
 # ## SSL Support
@@ -44,17 +44,17 @@ config :collaborative_drawing, CollaborativeDrawingWeb.Endpoint,
 # different ports.
 
 # Watch static and templates for browser reloading.
-config :collaborative_drawing, CollaborativeDrawingWeb.Endpoint,
+config :mapcanv, MapCanvWeb.Endpoint,
   live_reload: [
     patterns: [
       ~r"priv/static/(?!uploads/).*(js|css|png|jpeg|jpg|gif|svg)$",
       ~r"priv/gettext/.*(po)$",
-      ~r"lib/collaborative_drawing_web/(controllers|live|components)/.*(ex|heex)$"
+      ~r"lib/mapcanv_web/(controllers|live|components)/.*(ex|heex)$"
     ]
   ]
 
 # Enable dev routes for dashboard and mailbox
-config :collaborative_drawing, dev_routes: true
+config :mapcanv, dev_routes: true
 
 # Do not include metadata nor timestamps in development logs
 config :logger, :console, format: "[$level] $message\n"

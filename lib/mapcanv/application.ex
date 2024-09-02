@@ -1,4 +1,4 @@
-defmodule CollaborativeDrawing.Application do
+defmodule MapCanv.Application do
   # See https://hexdocs.pm/elixir/Application.html
   # for more information on OTP Applications
   @moduledoc false
@@ -8,22 +8,22 @@ defmodule CollaborativeDrawing.Application do
   @impl true
   def start(_type, _args) do
     children = [
-      CollaborativeDrawingWeb.Telemetry,
-      {DNSCluster, query: Application.get_env(:collaborative_drawing, :dns_cluster_query) || :ignore},
-      {Phoenix.PubSub, name: CollaborativeDrawing.PubSub},
+      MapCanvWeb.Telemetry,
+      {DNSCluster, query: Application.get_env(:mapcanv, :dns_cluster_query) || :ignore},
+      {Phoenix.PubSub, name: MapCanv.PubSub},
       # Start the Finch HTTP client for sending emails
-      {Finch, name: CollaborativeDrawing.Finch},
-      # Start a worker by calling: CollaborativeDrawing.Worker.start_link(arg)
-      # {CollaborativeDrawing.Worker, arg},
+      {Finch, name: MapCanv.Finch},
+      # Start a worker by calling: MapCanv.Worker.start_link(arg)
+      # {MapCanv.Worker, arg},
       # Start to serve requests, typically the last entry
-      CollaborativeDrawingWeb.Endpoint,
+      MapCanvWeb.Endpoint,
       # Start the LinesAgent
-      CollaborativeDrawing.FeaturesAgent
+      MapCanv.FeaturesAgent
     ]
 
     # See https://hexdocs.pm/elixir/Supervisor.html
     # for other strategies and supported options
-    opts = [strategy: :one_for_one, name: CollaborativeDrawing.Supervisor]
+    opts = [strategy: :one_for_one, name: MapCanv.Supervisor]
     Supervisor.start_link(children, opts)
   end
 
@@ -31,7 +31,7 @@ defmodule CollaborativeDrawing.Application do
   # whenever the application is updated.
   @impl true
   def config_change(changed, _new, removed) do
-    CollaborativeDrawingWeb.Endpoint.config_change(changed, removed)
+    MapCanvWeb.Endpoint.config_change(changed, removed)
     :ok
   end
 end

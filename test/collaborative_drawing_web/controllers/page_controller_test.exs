@@ -1,5 +1,5 @@
-defmodule CollaborativeDrawingWeb.PageControllerTest do
-  use CollaborativeDrawingWeb.ConnCase
+defmodule MapCanvWeb.PageControllerTest do
+  use MapCanvWeb.ConnCase
 
   test "GET /", %{conn: conn} do
     conn = get(conn, ~p"/")

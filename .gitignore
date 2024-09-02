@@ -23,7 +23,7 @@ erl_crash.dump
 /tmp/
 
 # Ignore package tarball (built via "mix hex.build").
-collaborative_drawing-*.tar
+mapcanv-*.tar
 
 # Ignore assets that are produced by build tools.
 /priv/static/assets/
