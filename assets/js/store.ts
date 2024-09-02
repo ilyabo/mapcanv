@@ -77,8 +77,6 @@ export const useAppStore = create<DrawingState>((set, get) => ({
       })
       .receive("ok", (resp) => {
         console.log("Joined successfully");
-        2;
-        console.log("resp", resp);
         if (resp) {
           const initialState = new Uint8Array(resp);
           Y.applyUpdate(ydoc, initialState); // Apply the initial state to the Yjs document
