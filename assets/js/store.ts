@@ -101,12 +101,12 @@ export const useAppStore = create<DrawingState>((set, get) => ({
       get().updateFeaturesFromY();
     });
 
-    ydoc.on("update", (update) => {
+    ydoc.on("update", (update: Uint8Array) => {
       // The 'update' is a Uint8Array containing only the difference
-      channel.push("yjs-update", {update: Array.from(update)});
+      channel.push("yjs-update", update.buffer);
     });
-    channel.on("yjs-update", (payload) => {
-      const update = new Uint8Array(payload.update);
+    channel.on("yjs-update", (payload: ArrayBuffer) => {
+      const update = new Uint8Array(payload);
       Y.applyUpdate(ydoc, update); // Efficiently applies just the difference
     });
   },
