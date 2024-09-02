@@ -6,6 +6,7 @@ import {
   GeoJsonEditMode,
 } from "@deck.gl-community/editable-layers";
 import {
+  BoxSelectIcon,
   LucideIcon,
   MousePointerIcon,
   MoveIcon,
@@ -15,6 +16,7 @@ import {
 
 export const DrawingMode = {
   SELECT: "select",
+  SELECT_RECT: "select:rect",
   MOVE: "move",
   DRAW_HEXAGON: "draw:hexagon",
   DRAW_POLYGON: "draw:polygon",
@@ -23,6 +25,7 @@ export type DrawingMode = (typeof DrawingMode)[keyof typeof DrawingMode];
 
 export const DRAWING_MODE_LABELS = {
   [DrawingMode.SELECT]: "Select",
+  [DrawingMode.SELECT_RECT]: "Select by Rectangle",
   [DrawingMode.MOVE]: "Move Objects",
   [DrawingMode.DRAW_HEXAGON]: "Drawing with Hexagons",
   [DrawingMode.DRAW_POLYGON]: "Drawing Polygons",
@@ -34,9 +37,10 @@ export function getDrawingModeLabel(mode: DrawingMode): string {
 
 export const DRAWING_MODE_KEYSTROKES = {
   [DrawingMode.SELECT]: "1",
-  [DrawingMode.MOVE]: "2",
-  [DrawingMode.DRAW_HEXAGON]: "3",
-  [DrawingMode.DRAW_POLYGON]: "4",
+  [DrawingMode.SELECT_RECT]: "2",
+  [DrawingMode.MOVE]: "3",
+  [DrawingMode.DRAW_HEXAGON]: "4",
+  [DrawingMode.DRAW_POLYGON]: "5",
 } as const satisfies Record<DrawingMode, string>;
 
 export function getDrawingModeKeystroke(mode: DrawingMode): string {
@@ -45,6 +49,7 @@ export function getDrawingModeKeystroke(mode: DrawingMode): string {
 
 export const DRAWING_MODE_ICONS = {
   [DrawingMode.SELECT]: MousePointerIcon,
+  [DrawingMode.SELECT_RECT]: BoxSelectIcon,
   [DrawingMode.MOVE]: MoveIcon,
   [DrawingMode.DRAW_HEXAGON]: PencilIcon,
   [DrawingMode.DRAW_POLYGON]: PentagonIcon,
@@ -63,8 +68,10 @@ export type DrawHandlers = {
   onDrag: DeckProps["onDrag"];
   onDragStart: DeckProps["onDragStart"];
   onDragEnd: DeckProps["onDragEnd"];
+  onSelect: (info: any) => any;
   onEdit: Parameters<EditableGeoJsonLayer["getModeProps"]>[0]["onEdit"]; // EditableGeojsonLayerProps is not exported
   cursor: string;
   editMode: typeof GeoJsonEditMode;
   enableDragPan: boolean;
+  selectionTool: "rectangle" | "polygon" | undefined;
 };

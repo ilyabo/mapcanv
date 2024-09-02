@@ -3,6 +3,8 @@ import {DrawHandlerContext, DrawHandlers, DrawingMode} from "./types";
 import {
   DrawPolygonMode,
   ModifyMode,
+  RotateMode,
+  TransformMode,
   TranslateMode,
   ViewMode,
 } from "@deck.gl-community/editable-layers";
@@ -13,12 +15,31 @@ import {useEffect, useState} from "react";
 
 const NOOP = () => {};
 const defaultHandlers = {
+  selectionTool: undefined,
   onClick: NOOP,
   onDrag: NOOP,
   onDragStart: NOOP,
   onDragEnd: NOOP,
-  onEdit: NOOP,
-};
+  onEdit: ({updatedData, editType, editContext}) => {
+    const {featureIndexes} = editContext;
+    if (featureIndexes && featureIndexes.length > 0) {
+      useAppStore
+        .getState()
+        .addOrUpdateFeatures(
+          featureIndexes.map((index) => updatedData.features[index])
+        );
+    }
+  },
+  onSelect: ({pickingInfos}) => {
+    const appState = useAppStore.getState();
+    const features = appState.features;
+    const selectedFeatures = pickingInfos
+      .map((pi) => features[pi.index]?.id)
+      .filter(Boolean);
+    console.log({pickingInfos, selectedFeatures});
+    appState.setSelectedIds(selectedFeatures);
+  },
+} satisfies Partial<DrawHandlers>;
 
 export function useDrawHandler(context: DrawHandlerContext): DrawHandlers {
   const drawingMode = useAppStore((state) => state.mode);
@@ -26,6 +47,7 @@ export function useDrawHandler(context: DrawHandlerContext): DrawHandlers {
   const setDrawingMode = useAppStore((state) => state.setDrawingMode);
   const drawHandlers = {
     [DrawingMode.SELECT]: useSelectHandlers(context),
+    [DrawingMode.SELECT_RECT]: useSelectRectHandlers(context),
     [DrawingMode.MOVE]: useMoveHandlers(context),
     [DrawingMode.DRAW_POLYGON]: usePolygonHandlers(context),
     [DrawingMode.DRAW_HEXAGON]: useHexagonHandlers(context),
@@ -48,6 +70,7 @@ export function useDrawHandler(context: DrawHandlerContext): DrawHandlers {
       cursor: "grabbing",
       editMode: ViewMode,
       enableDragPan: true,
+      selectionTool: undefined,
     };
   }
   return drawHandlers[drawingMode];
@@ -81,23 +104,25 @@ function useSelectHandlers(context: DrawHandlerContext): DrawHandlers {
         setSelectedIds(undefined);
       }
     },
-    onEdit: ({updatedData, editType, editContext}) => {
-      const {featureIndexes} = editContext;
-      if (featureIndexes && featureIndexes.length > 0) {
-        addOrUpdateFeatures(
-          featureIndexes.map((index) => updatedData.features[index])
-        );
-      }
-    },
     cursor: "pointer",
     editMode: selectedIds ? ModifyMode : ViewMode,
     enableDragPan: selectedIds ? false : true,
   };
 }
 
+function useSelectRectHandlers(context: DrawHandlerContext): DrawHandlers {
+  const setSelectedIds = useAppStore((state) => state.setSelectedIds);
+  return {
+    ...defaultHandlers,
+    cursor: "crosshair",
+    editMode: ViewMode,
+    enableDragPan: false,
+    selectionTool: "rectangle",
+  };
+}
+
 function useMoveHandlers(context: DrawHandlerContext): DrawHandlers {
   const setSelectedIds = useAppStore((state) => state.setSelectedIds);
-  const addOrUpdateFeatures = useAppStore((state) => state.addOrUpdateFeatures);
   return {
     ...defaultHandlers,
     onClick: (evt) => {
@@ -108,16 +133,8 @@ function useMoveHandlers(context: DrawHandlerContext): DrawHandlers {
         setSelectedIds(undefined);
       }
     },
-    onEdit: ({updatedData, editContext}) => {
-      const {featureIndexes} = editContext;
-      if (featureIndexes && featureIndexes.length > 0) {
-        addOrUpdateFeatures(
-          featureIndexes.map((index) => updatedData.features[index])
-        );
-      }
-    },
     cursor: "move",
-    editMode: TranslateMode,
+    editMode: TransformMode,
     enableDragPan: false,
   };
 }
@@ -167,10 +184,7 @@ function useHexagonHandlers(context: DrawHandlerContext): DrawHandlers {
       {
         id: h3,
         type: "Feature",
-        geometry: {
-          type: "Polygon",
-          coordinates: [boundary],
-        },
+        geometry: {type: "Polygon", coordinates: [boundary]},
         properties: {color},
       },
     ]);

@@ -122,7 +122,16 @@ export const useAppStore = create<DrawingState>((set, get) => {
     redo: () => yfeaturesUndo?.redo(),
 
     setHexResolution: (resolution) => set({hexResolution: resolution}),
-    setDrawingMode: (mode) => set({mode}),
+    setDrawingMode: (mode) => {
+      set({mode});
+      if (
+        [DrawingMode.DRAW_HEXAGON, DrawingMode.DRAW_POLYGON].includes(
+          DrawingMode[mode]
+        )
+      ) {
+        set({selectedIds: undefined});
+      }
+    },
     setPanning: (isPanning) => set({isPanning}),
     setSelectedIds: (ids) => set({selectedIds: ids}),
     clear: () => yfeatures.clear(),

@@ -1,7 +1,10 @@
 import {
+  Color,
   EditableGeoJsonLayer,
   FeatureCollection,
+  SelectionLayer,
 } from "@deck.gl-community/editable-layers";
+import {Layer} from "@deck.gl/core";
 import {
   MapboxOverlay as DeckOverlay,
   MapboxOverlayProps,
@@ -37,6 +40,12 @@ const INITIAL_VIEW_STATE = {
   pitch: 0,
   minZoom: 1.5,
 };
+
+const EDITABLE_FEATURES_LAYER_ID = "editable-geojson-layer";
+const SELECTION_LAYER_ID = "selection";
+const SELECTION_LINE_WIDTH = 3;
+const SELECTION_STROKE_COLOR: Color = [255, 100, 0, 255];
+const SELECTION_FILL_COLOR: Color = [255, 100, 0, 50];
 
 function DeckGLOverlay(props: MapboxOverlayProps): null {
   const overlay = useControl(({map}) => {
@@ -95,9 +104,9 @@ export const MapView: FC = () => {
     [features, selectedIds]
   );
 
-  const layers = [
+  const layers: Layer[] = [
     new EditableGeoJsonLayer({
-      id: "editable-geojson-layer",
+      id: EDITABLE_FEATURES_LAYER_ID,
       data: featureCollection,
       mode: drawHandlers.editMode,
       selectedFeatureIndexes,
@@ -111,15 +120,30 @@ export const MapView: FC = () => {
       stroked: true,
       filled: true,
       lineWidthUnits: "pixels",
-      getLineWidth: (f) => (selectedIds?.includes(f.id) ? 5 : 1),
+      getLineWidth: (f) =>
+        selectedIds?.includes(f.id) ? SELECTION_LINE_WIDTH : 1,
       getLineColor: (f) =>
         selectedIds?.includes(f.id)
-          ? [255, 100, 0, 255]
+          ? SELECTION_STROKE_COLOR
           : f.properties.color
           ? colorToRGBA(f.properties.color, {darker: 0.25})
           : defaultColor,
     }),
   ];
+  if (drawHandlers.selectionTool) {
+    layers.push(
+      new SelectionLayer({
+        id: SELECTION_LAYER_ID,
+        selectionType: drawHandlers.selectionTool,
+        onSelect: drawHandlers.onSelect,
+        layerIds: [EDITABLE_FEATURES_LAYER_ID],
+        getTentativeFillColor: () => SELECTION_FILL_COLOR,
+        getTentativeLineColor: () => SELECTION_STROKE_COLOR,
+        lineWidth: SELECTION_LINE_WIDTH,
+        lineWidthUnits: "pixels",
+      })
+    );
+  }
 
   return (
     <ReactMapGl
