@@ -9,12 +9,5 @@ export const ColorSelector: FC<ColorSelectorProps> = (props) => {
   const color = useAppStore((state) => state.color);
   const setColor = useAppStore((state) => state.setColor);
 
-  return (
-    <ColorPicker
-      onChange={(v) => {
-        setColor(v);
-      }}
-      value={color}
-    />
-  );
+  return <ColorPicker onChange={(v) => setColor(v)} value={color} />;
 };

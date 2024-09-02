@@ -19,6 +19,16 @@ export const DrawingMode = {
 } as const satisfies Record<string, string>;
 export type DrawingMode = (typeof DrawingMode)[keyof typeof DrawingMode];
 
+export const DRAWING_MODE_LABELS = {
+  [DrawingMode.SELECT]: "Select",
+  [DrawingMode.DRAW_HEXAGON]: "Draw Hexagon",
+  [DrawingMode.DRAW_POLYGON]: "Draw Polygon",
+} as const satisfies Record<DrawingMode, string>;
+
+export function getDrawingModeLabel(mode: DrawingMode): string {
+  return DRAWING_MODE_LABELS[mode];
+}
+
 export const DRAWING_MODE_KEYSTROKES = {
   [DrawingMode.SELECT]: "1",
   [DrawingMode.DRAW_HEXAGON]: "2",

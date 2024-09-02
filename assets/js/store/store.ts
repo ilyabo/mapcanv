@@ -46,7 +46,16 @@ export const useAppStore = create<DrawingState>((set, get) => {
     selectedIndexes: undefined,
     hexResolution: 10,
     isPanning: false,
-    setColor: (color) => set({color}),
+    setColor: (color) => {
+      set({color});
+      const {selectedIds} = get();
+      if (selectedIds) {
+        applyToSelectedFeatures((feature) => ({
+          ...feature,
+          properties: {...feature.properties, color},
+        }));
+      }
+    },
     setHexResolution: (resolution) => set({hexResolution: resolution}),
     setDrawingMode: (mode) => set({mode}),
     setPanning: (isPanning) => set({isPanning}),
@@ -119,4 +128,23 @@ export const useAppStore = create<DrawingState>((set, get) => {
       set({initialized: true});
     },
   };
+
+  function applyToSelectedFeatures(
+    fn: (feature: PolygonFeature) => PolygonFeature
+  ): void {
+    const {selectedIds, addOrUpdateFeatures} = get();
+    if (selectedIds) {
+      const toUpdate: PolygonFeature[] = [];
+      for (const id of selectedIds) {
+        const feature = yfeatures.get(id);
+        if (!feature) {
+          console.error("Feature not found", id);
+          continue;
+        }
+        toUpdate.push(fn(feature));
+      }
+      console.log("Updating features", toUpdate);
+      addOrUpdateFeatures(toUpdate);
+    }
+  }
 });
