@@ -1,4 +1,4 @@
-# CollaborativeDrawing
+# Mapcanv
 
 A collaborative map drawing app built using the [Phoenix Framework](https://phoenixframework.org/) and [deck.gl](http://deck.gl).
 
