@@ -14,9 +14,22 @@
 ARG ELIXIR_VERSION=1.15.7
 ARG OTP_VERSION=26.2
 ARG DEBIAN_VERSION=bullseye-20231009-slim
-
 ARG BUILDER_IMAGE="hexpm/elixir:${ELIXIR_VERSION}-erlang-${OTP_VERSION}-debian-${DEBIAN_VERSION}"
 ARG RUNNER_IMAGE="debian:${DEBIAN_VERSION}"
+ARG RUST_IMAGE="rust:1.70"
+
+# Build the Rust NIF in a separate stage
+# What we did here is build the library in its own Docker builder context,
+# so it runs in parallel with the rest of our Docker steps and can be cache’d easily.
+# Then we told Rustler to skip compiling and to load it directly from our where we put it.
+# See config/prod.exs
+# See https://fly.io/phoenix-files/elixir-and-rust-is-a-good-mix/
+FROM ${RUST_IMAGE} as rust_builder
+WORKDIR /app
+# Copy the Rust source code
+COPY native/yscrdt ./
+#RUN cargo build --release
+RUN cargo rustc --release
 
 FROM ${BUILDER_IMAGE} as builder
 
@@ -32,9 +45,6 @@ RUN apt-get install -y nodejs
 # Install Yarn
 RUN npm install -g yarn
 
-# Install Rust and Cargo
-RUN curl https://sh.rustup.rs -sSf | sh -s -- -y \
-    && source $HOME/.cargo/env
 
 # Prepare build directory
 WORKDIR /app
@@ -64,8 +74,12 @@ COPY lib lib
 COPY assets assets
 RUN cd assets && yarn install && cd ..
 
+
 # Compile assets
 RUN mix assets.deploy
+
+#NEW STUFF
+COPY --from=rust_builder /app/target/release/libyscrdt.* priv/native/
 
 # Compile the release
 RUN mix compile

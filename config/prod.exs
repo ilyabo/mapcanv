@@ -19,3 +19,12 @@ config :logger, level: :info
 
 # Runtime production configuration, including reading
 # of environment variables, is done on config/runtime.exs.
+
+# What we did here is build the library in its own Docker builder context,
+# so it runs in parallel with the rest of our Docker steps and can be cache’d easily.
+# Then we told Rustler to skip compiling and to load it directly from our where we put it.
+# See https://fly.io/phoenix-files/elixir-and-rust-is-a-good-mix/
+config :collaborative_drawing, YsCrdt,
+  crate: :yscrdt,
+  skip_compilation?: true,
+  load_from: {:collaborative_drawing, "priv/native/libyscrdt"}
