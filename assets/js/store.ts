@@ -101,13 +101,17 @@ export const useAppStore = create<DrawingState>((set, get) => ({
       get().updateFeaturesFromY();
     });
 
-    ydoc.on("update", (update: Uint8Array) => {
-      // The 'update' is a Uint8Array containing only the difference
-      channel.push("yjs-update", update.buffer);
+    ydoc.on("update", (update: Uint8Array, origin) => {
+      if (origin !== "remote") {
+        // Avoid feedback loop by checking if the update is coming from "remote"
+        channel.push("yjs-update", update.buffer);
+      }
     });
+
     channel.on("yjs-update", (payload: ArrayBuffer) => {
       const update = new Uint8Array(payload);
-      Y.applyUpdate(ydoc, update); // Efficiently applies just the difference
+      // Apply the update to the Yjs document
+      Y.applyUpdate(ydoc, update, "remote"); // Mark the update as coming from "remote"
     });
   },
 }));
