@@ -3,14 +3,14 @@
 # See https://fly.io/docs/reference/configuration/ for information about how to use this file.
 #
 
-app = 'mapcanv-long-cherry-7751'
+app = 'mapcanv'
 primary_region = 'ams'
 kill_signal = 'SIGTERM'
 
 [build]
 
 [env]
-  PHX_HOST = 'mapcanv-long-cherry-7751.fly.dev'
+  PHX_HOST = 'mapcanv.fly.dev'
   PORT = '8080'
 
 [http_service]
