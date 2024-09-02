@@ -2,11 +2,11 @@
 
 A collaborative map drawing app built using the [Phoenix Framework](https://phoenixframework.org/) and [deck.gl](http://deck.gl).
 
-[LIVE DEMO](https://collaborative-drawing.fly.dev) – Try opening in two browser windows
+[LIVE DEMO](https://mapcanv.fly.dev) – Try opening in two browser windows
 
-<img src=https://github.com/ilyabo/collaborative_drawing/assets/351828/16368053-1aa9-469d-a7c7-0f4836997aaa width=500>
+<img src=https://github.com/ilyabo/mapcanv/assets/351828/16368053-1aa9-469d-a7c7-0f4836997aaa width=500>
 
-[<img width=250 src=https://github.com/ilyabo/collaborative_drawing/assets/351828/222103b5-18c6-4a1c-938f-e7d94d2994aa>](https://collaborative-drawing.fly.dev)
+[<img width=250 src=https://github.com/ilyabo/mapcanv/assets/351828/222103b5-18c6-4a1c-938f-e7d94d2994aa>](https://mapcanv.fly.dev)
 
 # Running locally
 
