@@ -1,13 +1,13 @@
-import {LocateFixedIcon, SquareDotIcon} from "lucide-react";
+import {NavigationIcon, NavigationOffIcon, SquareDotIcon} from "lucide-react";
 import React, {FC} from "react";
 import {MapRef} from "react-map-gl/maplibre";
 import {ToolbarButton} from "../components/toolbar-button";
+import PresenceContainer from "./presence-container";
 import ShareContainer from "./share-container";
 import {ToolbarContainer} from "./toolbar-container";
 import {UndoContainer} from "./undo-container";
 import {useFitBounds} from "./use-fit-bounds";
 import {useGeolocation} from "./use-geolocation";
-import PresenceContainer from "./presence-container";
 
 type Props = {
   mapRef: React.RefObject<MapRef>;
@@ -15,7 +15,7 @@ type Props = {
 
 const MapControlsContainer: FC<Props> = (props) => {
   const {mapRef} = props;
-  const {handleLocate} = useGeolocation();
+  const {handleLocate, locateError} = useGeolocation();
   const {handleFitBounds} = useFitBounds(mapRef);
 
   return (
@@ -34,7 +34,7 @@ const MapControlsContainer: FC<Props> = (props) => {
         <ToolbarButton
           isSelected={false}
           tooltipText={"Locate me"}
-          icon={LocateFixedIcon}
+          icon={locateError ? NavigationOffIcon : NavigationIcon}
           onClick={handleLocate}
         />
         <ToolbarButton
