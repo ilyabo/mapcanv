@@ -2,11 +2,11 @@
 
 A collaborative map drawing app built using the [Phoenix Framework](https://phoenixframework.org/) and [deck.gl](http://deck.gl).
 
-[TRY LIVE](https://mapcanv.com) – Try opening in two browser windows
+[TRY LIVE](https://mapcanv.com)
 
-<img src=https://github.com/ilyabo/mapcanv/assets/351828/16368053-1aa9-469d-a7c7-0f4836997aaa width=500>
+<img width="937" alt="image" src="https://github.com/user-attachments/assets/9382323d-cc14-4f81-bd1d-39392ba75619">
 
-[<img width=250 src=https://github.com/ilyabo/mapcanv/assets/351828/222103b5-18c6-4a1c-938f-e7d94d2994aa>](https://mapcanv.com)
+
 
 # Running locally
 
