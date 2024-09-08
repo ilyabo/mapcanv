@@ -198,9 +198,12 @@ export const useAppStore = create<DrawingState>((set, get) => {
     },
 
     pushCursorPresence: ({lat, lng}) => {
-      const {isShared, channel, userName, userColor} = get();
-      if (isShared && channel) {
-        channel.push("cursor_moved", {lat, lng, userName, userColor});
+      const {userId, isShared, channel, userName, userColor, presence} = get();
+      if (isShared && channel && presence) {
+        if (presence.length > 1) {
+          // Only push the cursor position if there are other users in the room
+          channel.push("cursor_moved", {lat, lng, userName, userColor});
+        }
       }
     },
 
