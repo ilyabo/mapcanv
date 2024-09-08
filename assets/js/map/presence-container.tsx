@@ -11,20 +11,12 @@ import {Separator} from "../components/ui/separator";
 const PresenceContainer: FC = () => {
   const currentUserId = useAppStore((state) => state.userId);
   const presence = useAppStore((state) => state.presence);
-  const users = useMemo(
-    () =>
-      Object.entries(presence).map(([userId, {metas}]) => ({
-        userId,
-        name: metas[0].name,
-        color: metas[0].color,
-      })),
-    [presence]
-  );
+  if (!presence?.length) return null;
   return (
     <DropdownMenu>
       <DropdownMenuTrigger>
         <div className="flex">
-          {users.map(({userId, color}) => (
+          {presence.map(({userId, color}) => (
             <svg
               key={userId}
               className="ml-[-18px] cursor-pointer"
@@ -45,7 +37,7 @@ const PresenceContainer: FC = () => {
         </div>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end">
-        {users.map(({userId, color, name}, i) => (
+        {presence.map(({userId, color, name}, i) => (
           <Fragment key={userId}>
             <DropdownMenuItem
               className="text-xs"
@@ -57,7 +49,7 @@ const PresenceContainer: FC = () => {
               />
               {name ?? userId === currentUserId ? "You" : "New user"}
             </DropdownMenuItem>
-            {i < users.length - 1 ? (
+            {i < presence.length - 1 ? (
               <div className="px-1 pb-1">
                 <Separator />
               </div>

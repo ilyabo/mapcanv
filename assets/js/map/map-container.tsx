@@ -9,12 +9,7 @@ import {
   MapboxOverlay as DeckOverlay,
   MapboxOverlayProps,
 } from "@deck.gl/mapbox";
-import {
-  MapRef,
-  Map as ReactMapGl,
-  ViewStateChangeEvent,
-} from "react-map-gl/maplibre";
-
+import throttle from "lodash.throttle";
 import {Map} from "maplibre-gl";
 import React, {
   FC,
@@ -24,14 +19,22 @@ import React, {
   useRef,
   useState,
 } from "react";
-import {useControl} from "react-map-gl/maplibre";
+import {
+  MapRef,
+  Map as ReactMapGl,
+  useControl,
+  ViewStateChangeEvent,
+} from "react-map-gl/maplibre";
 import {useAppStore} from "../store/store";
 import {colorToRGBA, findLastLabelLayerId} from "../store/utils";
 import {useDrawHandler} from "./use-draw-handlers";
 
+import {MapLayerMouseEvent} from "react-map-gl";
 import MapControlsContainer from "./map-controls-container";
 import {useKeyStrokes} from "./use-key-strokes";
 import {usePanning} from "./use-panning";
+import CustomOverlay from "./custom-overlay";
+import {CursorPresenceOverlay} from "./cursor-presence-overlay";
 
 const defaultColor: [number, number, number, number] = [150, 150, 150, 200];
 
@@ -106,6 +109,12 @@ export const MapContainer: FC = () => {
     [features, selectedIds]
   );
 
+  const pushCursorPresence = useAppStore((state) => state.pushCursorPresence);
+  const handleMouseMove = useCallback(
+    throttle((e: MapLayerMouseEvent) => pushCursorPresence(e.lngLat), 200),
+    [pushCursorPresence]
+  );
+
   const layers: Layer[] = [
     new EditableGeoJsonLayer({
       id: EDITABLE_FEATURES_LAYER_ID,
@@ -162,6 +171,7 @@ export const MapContainer: FC = () => {
         cursor="default"
         onLoad={onMapLoad}
         onMove={handleMove}
+        onMouseMove={handleMouseMove}
       >
         <DeckGLOverlay
           layers={layers}
@@ -172,6 +182,9 @@ export const MapContainer: FC = () => {
           onDragEnd={drawHandlers.onDragEnd}
           interleaved
         />
+        <CustomOverlay>
+          <CursorPresenceOverlay />
+        </CustomOverlay>
       </ReactMapGl>
 
       <MapControlsContainer mapRef={mapRef} />

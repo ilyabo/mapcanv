@@ -31,13 +31,28 @@ defmodule MapCanvWeb.DrawingChannel do
     {:ok, _} = Presence.track(socket, socket.assigns.user_id, %{
       online_at: inspect(System.system_time(:second)),
       name: user_name,
-      color: user_color
+      color: user_color,
+      cursor: %{lat: 0, lng: 0} # Initial cursor position
     })
     push(socket, "presence_state", Presence.list(socket))
 
     {:noreply, socket}
   end
 
+  def handle_in("cursor_moved", %{"lat" => lat, "lng" => lng, "userName" => user_name, "userColor" => user_color}, socket) do
+    user_id = socket.assigns[:user_id]
+    guid = socket.assigns[:guid]
+
+    IO.inspect("Cursor moved to lat: #{lat}, lng: #{lng} for user_id: #{user_id} in drawing channel with guid: #{guid}")
+    # Update the user's presence with the new cursor position
+    {:ok, _} = Presence.update(socket, user_id, %{
+      cursor: %{lat: lat, lng: lng},
+      name: user_name,
+      color: user_color
+    })
+
+    {:noreply, socket}
+  end
 
   @impl true
   def terminate(_reason, socket) do

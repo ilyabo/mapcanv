@@ -1,47 +1,46 @@
-// src/store.ts
-import {FeatureOf, Polygon} from "@deck.gl-community/editable-layers";
-import {ViewState} from "react-map-gl";
 import {interpolateRainbow, rgb} from "d3";
-import {create} from "zustand";
 import {produce} from "immer";
+import {LngLat, ViewState} from "react-map-gl";
+import {create} from "zustand";
 
-import * as Y from "yjs";
-import * as Phoenix from "phoenix";
-import {IndexeddbPersistence} from "y-indexeddb";
-import {DrawingMode} from "../map/types";
 import {createId} from "@paralleldrive/cuid2";
-import {generateColorFromId} from "./utils";
+import {Socket} from "phoenix";
+import {IndexeddbPersistence} from "y-indexeddb";
+import * as Y from "yjs";
+import {DrawingMode} from "../map/types";
+import {generateColorFromId, parseUserPresenceEntry} from "./utils";
+import {
+  UserPresence,
+  PhoenixChannel,
+  PhoenixSocket,
+  PolygonFeature,
+  PresenseState,
+} from "./types";
 
-export type PhoenixSocket = typeof Phoenix.Socket.prototype;
-export type PolygonFeature = FeatureOf<Polygon>;
-export type PresenseState = Record<
-  string, // user_id
-  {
-    metas: [
-      {color?: string; name?: string; phx_ref: string; online_at: number}
-    ];
-  }
->;
-
-interface DrawingState {
-  presence: PresenseState;
+type DrawingState = {
   userId: string;
+  userColor: string;
+  userName: string | null;
   ydoc: Y.Doc;
   yfeaturesUndo: Y.UndoManager;
-  shouldFitViewport: boolean | undefined; // whether to fit the viewport to the features
   indexedDbProvider: IndexeddbPersistence;
+
+  isShared: boolean;
+  presence: UserPresence[] | undefined;
+  channel: PhoenixChannel | undefined;
+  socket: PhoenixSocket | undefined;
+
+  shouldFitViewport: boolean | undefined; // whether to fit the viewport to the features
   features: PolygonFeature[];
   mapViewState: ViewState;
   isPanning: boolean;
   color: string;
   selectedIds: string[] | undefined;
-  socket: PhoenixSocket | undefined;
   initProject: (guid?: string) => void;
   setColor: (color: string) => void;
   setSelectedIds: (ids: string[] | undefined) => void;
   setMapViewState: (viewState: ViewState) => void;
   shareProject: () => string;
-  isShared: boolean;
   undo: () => void;
   redo: () => void;
   setPanning: (isPanning: boolean) => void;
@@ -52,7 +51,8 @@ interface DrawingState {
   dropSelectedFeatures: () => void;
   hexResolution: number;
   setHexResolution: (resolution: number) => void;
-}
+  pushCursorPresence: (latLng: LngLat) => void;
+};
 
 const LOCAL_DOCUMENT_GUID = "__local__";
 
@@ -96,7 +96,10 @@ export const useAppStore = create<DrawingState>((set, get) => {
 
   return {
     userId,
-    presence: {},
+    userColor: generateColorFromId(userId),
+    userName: null, // Undefined doesn't work when pushed to Phoenix
+    presence: undefined,
+    channel: undefined,
     ...initYDoc(), // TODO avoid local initialization if guid is provided
     mapViewState: INITIAL_MAP_VIEW_STATE,
     // Array of features extracted from yarray used for rendering
@@ -125,21 +128,18 @@ export const useAppStore = create<DrawingState>((set, get) => {
       }
 
       if (guid) {
-        const {ydoc, yfeaturesUndo, isShared, userId} = get();
+        const {ydoc, yfeaturesUndo, isShared, userId, userName, userColor} =
+          get();
         if (isShared) return;
 
-        const socket = new Phoenix.Socket("/socket", {params: {userId}});
+        const socket = new Socket("/socket", {params: {userId}});
         // @ts-ignore
         socket.connect();
-        set({socket});
 
         const channel = socket.channel(
           `drawing:${guid}`,
           // Y.encodeStateAsUpdate(ydoc).buffer // Send the initial state to the server
-          {
-            userName: null,
-            userColor: generateColorFromId(userId),
-          }
+          {userName, userColor}
         );
         channel
           .join()
@@ -173,24 +173,34 @@ export const useAppStore = create<DrawingState>((set, get) => {
           Y.applyUpdate(ydoc, update, "remote"); // Mark the update as coming from "remote"
         });
 
-        // const presence = new Phoenix.Presence(channel);
-        // const updatePresence = () => set({presence: presence.state});
-        // presence.onSync(updatePresence);
-        // presence.onLeave(updatePresence);
-        // presence.onJoin(updatePresence);
-        channel.on("presence_state", (state) => {
-          set({presence: state});
+        channel.on("presence_state", (presenceState: PresenseState) => {
+          set({
+            presence: Object.entries(presenceState).map(parseUserPresenceEntry),
+          });
         });
         channel.on("presence_diff", ({leaves, joins}) => {
           set((state) =>
             produce(state, (draft) => {
-              for (const id in leaves) delete draft.presence[id];
-              for (const id in joins) draft.presence[id] = joins[id];
+              if (!draft.presence) draft.presence = [];
+              draft.presence = draft.presence.filter(
+                ({userId}) => !(userId in leaves)
+              );
+              draft.presence.push(
+                ...Object.entries(joins).map(parseUserPresenceEntry)
+              );
+              draft.presence.sort((a, b) => a.userId.localeCompare(b.userId));
             })
           );
         });
 
-        set({isShared: true});
+        set({socket, channel, isShared: true, presence: []});
+      }
+    },
+
+    pushCursorPresence: ({lat, lng}) => {
+      const {isShared, channel, userName, userColor} = get();
+      if (isShared && channel) {
+        channel.push("cursor_moved", {lat, lng, userName, userColor});
       }
     },
 
@@ -202,14 +212,6 @@ export const useAppStore = create<DrawingState>((set, get) => {
       const newDoc = get().ydoc;
       Y.applyUpdate(newDoc, oldState);
       return guid;
-      // const {ydoc, indexedDbProvider} = get();
-      // indexedDbProvider.persist();
-      // const update = Y.encodeStateAsUpdate(ydoc);
-      // const payload = new Uint8Array(update).buffer;
-      // const {socket} = get();
-      // if (socket) {
-      //   socket.push("yjs-update", payload);
-      // }
     },
 
     setColor: (color) => {

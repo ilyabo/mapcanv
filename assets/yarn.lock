@@ -5746,6 +5746,8 @@ __metadata:
     deck.gl: "npm:^9.0.19"
     h3-js: "npm:^4.1.0"
     immer: "npm:^10.1.1"
+    lodash.debounce: "npm:^4.0.8"
+    lodash.throttle: "npm:^4.1.1"
     lucide-react: "npm:^0.438.0"
     maplibre-gl: "npm:^4.4.0"
     phoenix: "npm:^1.7.12"

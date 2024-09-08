@@ -1,4 +1,5 @@
 import {rgb} from "d3";
+import {UserPresence} from "./types";
 
 export const colorToRGBA = (
   color,
@@ -44,4 +45,19 @@ function hashString(str: string): number {
     hash = str.charCodeAt(i) + ((hash << 5) - hash);
   }
   return hash;
+}
+
+export function parseUserPresenceEntry([
+  userId,
+  {
+    metas: [first],
+  },
+]: [string, any]): UserPresence {
+  return {
+    userId,
+    name: first.name,
+    color: first.color,
+    cursor: first.cursor ?? {lng: 0, lat: 0},
+    onlineAt: Number(first.online_at),
+  };
 }
