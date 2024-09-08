@@ -5,6 +5,7 @@ import {PolygonFeature, useAppStore} from "../store/store";
 
 export function useFitBounds(mapRef: React.RefObject<MapRef>) {
   const features = useAppStore((state) => state.features);
+  const shouldFitViewport = useAppStore((state) => state.shouldFitViewport);
   const fitBounds = useCallback(
     (duration: number) => {
       const [minLng, minLat, maxLng, maxLat] = getFeaturesBounds(features);
@@ -21,11 +22,11 @@ export function useFitBounds(mapRef: React.RefObject<MapRef>) {
 
   const initialFitDone = useRef(false);
   useEffect(() => {
-    if (!initialFitDone.current && features.length > 0) {
+    if (!initialFitDone.current && shouldFitViewport) {
       fitBounds(0);
       initialFitDone.current = true;
     }
-  }, [fitBounds, features]);
+  }, [fitBounds, shouldFitViewport]);
 
   return {
     handleFitBounds: useCallback(() => {

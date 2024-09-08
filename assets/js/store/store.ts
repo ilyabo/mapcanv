@@ -16,6 +16,7 @@ export type PolygonFeature = FeatureOf<Polygon>;
 interface DrawingState {
   ydoc: Y.Doc;
   yfeaturesUndo: Y.UndoManager;
+  shouldFitViewport: boolean | undefined; // whether to fit the viewport to the features
   indexedDbProvider: IndexeddbPersistence;
   features: PolygonFeature[];
   mapViewState: ViewState;
@@ -66,7 +67,13 @@ export const useAppStore = create<DrawingState>((set, get) => {
   const syncFeatures = () => {
     // Extract features from ydoc and store them in the state for rendering
     const features = Array.from(getYFeatures(get().ydoc).values());
-    set({features});
+    set({
+      features,
+      // If it's the first sync, fit the viewport to the features only if there are any
+      ...(get().shouldFitViewport === undefined && {
+        shouldFitViewport: features.length > 0,
+      }),
+    });
   };
 
   return {
@@ -75,6 +82,7 @@ export const useAppStore = create<DrawingState>((set, get) => {
     // Array of features extracted from yarray used for rendering
     features: [], // Don't modify this directly, use yfeatures instead
     color: rgb(interpolateRainbow(Math.random())).formatHex(),
+    loadedEmpty: false,
     isShared: false,
     selectedIds: undefined,
     mode: DrawingMode.SELECT,
@@ -82,6 +90,7 @@ export const useAppStore = create<DrawingState>((set, get) => {
     hexResolution: 10,
     isPanning: false,
     socket: undefined,
+    shouldFitViewport: undefined,
 
     initProject: (guid) => {
       const oldGuid = get().ydoc.guid;
@@ -176,6 +185,7 @@ export const useAppStore = create<DrawingState>((set, get) => {
 
     undo: () => get().yfeaturesUndo?.undo(),
     redo: () => get().yfeaturesUndo?.redo(),
+    clear: () => getYFeatures(get().ydoc).clear(),
 
     setMapViewState: (viewState) => set({mapViewState: viewState}),
     setHexResolution: (resolution) => set({hexResolution: resolution}),
@@ -193,7 +203,6 @@ export const useAppStore = create<DrawingState>((set, get) => {
     },
     setPanning: (isPanning) => set({isPanning}),
     setSelectedIds: (ids) => set({selectedIds: ids}),
-    clear: () => getYFeatures(get().ydoc).clear(),
 
     addOrUpdateFeatures: (features) => {
       for (const feature of features) {

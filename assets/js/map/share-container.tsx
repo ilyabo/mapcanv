@@ -1,6 +1,6 @@
 import {Separator} from "@radix-ui/react-dropdown-menu";
 import {PinIcon, Share2Icon, XIcon} from "lucide-react";
-import React, {FC, useCallback, useState} from "react";
+import React, {FC, useCallback, useEffect, useState, MouseEvent} from "react";
 import {Button} from "../components/ui/button";
 import {
   DropdownMenu,
@@ -14,22 +14,28 @@ type Props = {};
 
 const ShareContainer: FC<Props> = (props) => {
   const {} = props;
+  const guid = useAppStore((state) => state.ydoc.guid);
   const shareProject = useAppStore((state) => state.shareProject);
   const isShared = useAppStore((state) => state.isShared);
   const [qrCode, setQrCode] = useState<string | null>(null);
   const [open, setOpen] = useState(false);
   const [pinned, setPinned] = useState(false);
-  const handleShare = useCallback(() => {
-    if (isShared) {
-      // Copy the URL of the project to the clipboard
-      navigator.clipboard.writeText(window.location.href);
-      return;
-    } else {
-      // Share the project and update the URL
-      const guid = shareProject();
-      history.replaceState({}, "", `/${guid}`);
-    }
-  }, [isShared]);
+  const handleShare = useCallback(
+    (evt: MouseEvent) => {
+      if (isShared) {
+        // Copy the URL of the project to the clipboard
+        navigator.clipboard.writeText(window.location.href);
+        return;
+      } else {
+        // Share the project and update the URL
+        setPinned(true);
+        const guid = shareProject();
+        history.replaceState({}, "", `/${guid}`);
+      }
+      evt.stopPropagation();
+    },
+    [isShared]
+  );
 
   const handleTogglePin = useCallback(() => {
     if (!isShared) return;
@@ -46,31 +52,35 @@ const ShareContainer: FC<Props> = (props) => {
     (open: boolean) => {
       if (isShared) {
         if (!pinned) setOpen(open);
-        if (open) {
-          (async () => {
-            const url = window.location.href;
-            const QRCode = await import("qrcode");
-            const dataUrl = await new Promise<string>((res, rej) => {
-              QRCode.toDataURL(url, (err, str) => {
-                if (err) rej(err);
-                else res(str);
-              });
-            });
-            setQrCode(dataUrl);
-          })();
-        }
       } else {
         setOpen(open);
       }
     },
     [isShared, pinned]
   );
+
+  useEffect(() => {
+    if (isShared && open) {
+      (async () => {
+        const url = window.location.href;
+        const QRCode = await import("qrcode");
+        const dataUrl = await new Promise<string>((res, rej) => {
+          QRCode.toDataURL(url, (err, str) => {
+            if (err) rej(err);
+            else res(str);
+          });
+        });
+        setQrCode(dataUrl);
+      })();
+    }
+  }, [open, isShared, guid]);
+
   return (
     <DropdownMenu open={open} onOpenChange={handleOpenChange} modal={!isShared}>
       <DropdownMenuTrigger asChild>
         <Button className="text-xs bg-blue-700 hover:bg-blue-600">Share</Button>
       </DropdownMenuTrigger>
-      <DropdownMenuContent className="max-w-[195px] flex flex-col items-center">
+      <DropdownMenuContent className="max-w-[200px] flex flex-col items-center">
         <DropdownMenuItem
           className="text-xs flex flex-col gap-1 items-start"
           onClick={handleShare}
@@ -98,10 +108,11 @@ const ShareContainer: FC<Props> = (props) => {
                 </span>
               </>
             ) : (
-              <span>Create a new shared project based on this one.</span>
+              <span>
+                Create a new shared project based on this one to let others
+                collaborate with you on it.
+              </span>
             )}
-            {/* Create a shareable link to this project which will allow others to
-            collaborate with you on it. */}
           </div>
         </DropdownMenuItem>
         {isShared ? (
