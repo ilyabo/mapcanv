@@ -10,7 +10,7 @@ kill_signal = 'SIGTERM'
 [build]
 
 [env]
-  PHX_HOST = 'mapcanv.fly.dev'
+  PHX_HOST = 'mapcanv.com'
   PORT = '8080'
 
 [http_service]
