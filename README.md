@@ -4,8 +4,7 @@ A collaborative map drawing app built using the [Phoenix Framework](https://phoe
 
 [TRY LIVE](https://mapcanv.com)
 
-<img width="937" alt="image" src="https://github.com/user-attachments/assets/9382323d-cc14-4f81-bd1d-39392ba75619">
-
+<img width="600" alt="image" src="https://github.com/user-attachments/assets/f38b4c5b-4194-4d53-b782-d47144f5b3fc">
 
 
 # Running locally
