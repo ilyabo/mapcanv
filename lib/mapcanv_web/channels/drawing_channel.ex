@@ -1,21 +1,66 @@
 defmodule MapCanvWeb.DrawingChannel do
   use MapCanvWeb, :channel
   alias MapCanv.FeaturesAgent
+  alias MapCanvWeb.Presence
 
   @impl true
-  def join("drawing:" <> guid, {:binary, state_binary}, socket) do
-    IO.inspect("Joining drawing channel with guid: #{guid}")
+  def join("drawing:" <> guid, %{"userName" => user_name, "userColor" => user_color}, socket) do
+    user_id = socket.assigns[:user_id]
+    IO.inspect("Joining drawing channel with guid: #{guid} and user_id: #{user_id}")
 
-    FeaturesAgent.apply_update(guid, state_binary)
+    #FeaturesAgent.apply_update(guid, state_binary)
     current_state = FeaturesAgent.get_state(guid)
 
     # Store the GUID in the socket assigns
     socket = assign(socket, :guid, guid)
 
+    # Track the user's presence for the specific GUID
+    send(self(), {:after_join, user_name, user_color})
+
     {:ok, {:binary, current_state}, socket}
   end
 
+  # Track presence after joining the channel
   @impl true
+  def handle_info({:after_join, user_name, user_color}, socket) do
+    guid = socket.assigns.guid
+    user_id = socket.assigns[:user_id]
+    IO.inspect("Tracking presence for drawing channel with guid: #{guid} and user_id: #{user_id}")
+
+    # Track presence
+    {:ok, _} = Presence.track(socket, socket.assigns.user_id, %{
+      online_at: inspect(System.system_time(:second)),
+      name: user_name,
+      color: user_color
+    })
+    push(socket, "presence_state", Presence.list(socket))
+
+    {:noreply, socket}
+  end
+
+
+  @impl true
+  def terminate(_reason, socket) do
+    guid = socket.assigns.guid
+    user_id = socket.assigns[:user_id]
+    IO.inspect("Terminating drawing channel with guid: #{guid} and user_id: #{user_id}")
+
+    # Fetch the current presence information for the GUID
+    current_presence = Presence.list("drawing:#{guid}")
+
+    # If no more users are present for this GUID, clean up resources
+    if map_size(current_presence) == 1 do
+      # This was the last user, perform the cleanup
+      #cleanup_ydoc(guid)
+    end
+
+    :ok
+  end
+
+  # Handle incoming Yjs updates
+  @impl true
+  @spec handle_in(<<_::80>>, {:binary, binary()}, Phoenix.Socket.t()) ::
+          {:noreply, Phoenix.Socket.t()}
   def handle_in("yjs-update", {:binary, update_binary}, socket) do
     guid = socket.assigns[:guid]
 

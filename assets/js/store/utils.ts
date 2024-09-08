@@ -31,3 +31,17 @@ export function findLastLabelLayerId(style) {
 export function isValudGuid(guid: string | undefined) {
   return guid && /^[a-z0-9]{24}$/.test(guid);
 }
+
+export function generateColorFromId(id: string): string {
+  const hash = hashString(id);
+  const hue = hash % 360;
+  return `hsl(${hue}, 100%, 50%)`;
+}
+
+function hashString(str: string): number {
+  let hash = 0;
+  for (let i = 0; i < str.length; i++) {
+    hash = str.charCodeAt(i) + ((hash << 5) - hash);
+  }
+  return hash;
+}

@@ -1,4 +1,4 @@
-import {Separator} from "@radix-ui/react-dropdown-menu";
+import {Separator} from "../components/ui/separator";
 import {PinIcon, Share2Icon, XIcon} from "lucide-react";
 import React, {FC, useCallback, useEffect, useState, MouseEvent} from "react";
 import {Button} from "../components/ui/button";
@@ -78,7 +78,9 @@ const ShareContainer: FC<Props> = (props) => {
   return (
     <DropdownMenu open={open} onOpenChange={handleOpenChange} modal={!isShared}>
       <DropdownMenuTrigger asChild>
-        <Button className="text-xs bg-blue-700 hover:bg-blue-600">Share</Button>
+        <Button size="sm" className="text-xs bg-blue-700 hover:bg-blue-600">
+          Share
+        </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent className="max-w-[200px] flex flex-col items-center">
         <DropdownMenuItem

@@ -11,14 +11,19 @@ defmodule MapCanv.Application do
       MapCanvWeb.Telemetry,
       {DNSCluster, query: Application.get_env(:mapcanv, :dns_cluster_query) || :ignore},
       {Phoenix.PubSub, name: MapCanv.PubSub},
+
+      # Presence must be after the PubSub child and before the endpoint
+      # See https://hexdocs.pm/phoenix/Phoenix.Presence.html#module-example-usage
+      MapCanvWeb.Presence,
+
       # Start the Finch HTTP client for sending emails
       {Finch, name: MapCanv.Finch},
       # Start a worker by calling: MapCanv.Worker.start_link(arg)
       # {MapCanv.Worker, arg},
       # Start to serve requests, typically the last entry
       MapCanvWeb.Endpoint,
-      # Start the LinesAgent
-      MapCanv.FeaturesAgent
+      # Start the FeaturesAgent
+      MapCanv.FeaturesAgent,
     ]
 
     # See https://hexdocs.pm/elixir/Supervisor.html

@@ -3,17 +3,29 @@ import {FeatureOf, Polygon} from "@deck.gl-community/editable-layers";
 import {ViewState} from "react-map-gl";
 import {interpolateRainbow, rgb} from "d3";
 import {create} from "zustand";
+import {produce} from "immer";
 
 import * as Y from "yjs";
-import {Socket} from "phoenix";
+import * as Phoenix from "phoenix";
 import {IndexeddbPersistence} from "y-indexeddb";
 import {DrawingMode} from "../map/types";
 import {createId} from "@paralleldrive/cuid2";
+import {generateColorFromId} from "./utils";
 
-export type PhoenixSocket = typeof Socket.prototype;
+export type PhoenixSocket = typeof Phoenix.Socket.prototype;
 export type PolygonFeature = FeatureOf<Polygon>;
+export type PresenseState = Record<
+  string, // user_id
+  {
+    metas: [
+      {color?: string; name?: string; phx_ref: string; online_at: number}
+    ];
+  }
+>;
 
 interface DrawingState {
+  presence: PresenseState;
+  userId: string;
   ydoc: Y.Doc;
   yfeaturesUndo: Y.UndoManager;
   shouldFitViewport: boolean | undefined; // whether to fit the viewport to the features
@@ -42,7 +54,7 @@ interface DrawingState {
   setHexResolution: (resolution: number) => void;
 }
 
-const LOCAL_DOCUMENT_GUID = "drawing";
+const LOCAL_DOCUMENT_GUID = "__local__";
 
 export const INITIAL_MAP_VIEW_STATE: ViewState = {
   latitude: 0,
@@ -76,7 +88,15 @@ export const useAppStore = create<DrawingState>((set, get) => {
     });
   };
 
+  let userId = localStorage.getItem("user_id");
+  if (!userId) {
+    userId = createId();
+    localStorage.setItem("user_id", userId);
+  }
+
   return {
+    userId,
+    presence: {},
     ...initYDoc(), // TODO avoid local initialization if guid is provided
     mapViewState: INITIAL_MAP_VIEW_STATE,
     // Array of features extracted from yarray used for rendering
@@ -105,18 +125,21 @@ export const useAppStore = create<DrawingState>((set, get) => {
       }
 
       if (guid) {
-        const {ydoc, yfeaturesUndo, isShared} = get();
+        const {ydoc, yfeaturesUndo, isShared, userId} = get();
         if (isShared) return;
 
-        const socket = new Socket(
-          "/socket" /*, {params: {token: window.userToken}}*/
-        );
+        const socket = new Phoenix.Socket("/socket", {params: {userId}});
+        // @ts-ignore
         socket.connect();
         set({socket});
 
         const channel = socket.channel(
           `drawing:${guid}`,
-          Y.encodeStateAsUpdate(ydoc).buffer // Send the initial state to the server
+          // Y.encodeStateAsUpdate(ydoc).buffer // Send the initial state to the server
+          {
+            userName: null,
+            userColor: generateColorFromId(userId),
+          }
         );
         channel
           .join()
@@ -148,6 +171,23 @@ export const useAppStore = create<DrawingState>((set, get) => {
           const update = new Uint8Array(payload);
           // Apply the update to the Yjs document
           Y.applyUpdate(ydoc, update, "remote"); // Mark the update as coming from "remote"
+        });
+
+        // const presence = new Phoenix.Presence(channel);
+        // const updatePresence = () => set({presence: presence.state});
+        // presence.onSync(updatePresence);
+        // presence.onLeave(updatePresence);
+        // presence.onJoin(updatePresence);
+        channel.on("presence_state", (state) => {
+          set({presence: state});
+        });
+        channel.on("presence_diff", ({leaves, joins}) => {
+          set((state) =>
+            produce(state, (draft) => {
+              for (const id in leaves) delete draft.presence[id];
+              for (const id in joins) draft.presence[id] = joins[id];
+            })
+          );
         });
 
         set({isShared: true});

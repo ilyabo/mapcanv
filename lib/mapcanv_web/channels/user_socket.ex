@@ -25,8 +25,9 @@ defmodule MapCanvWeb.UserSocket do
   # See `Phoenix.Token` documentation for examples in
   # performing token verification on connect.
   @impl true
-  def connect(_params, socket, _connect_info) do
-    {:ok, socket}
+  def connect(%{"userId" => user_id}, socket, _connect_info) do
+     # Assign the user_id passed from the client to the socket
+    {:ok, assign(socket, :user_id, user_id)}
   end
 
   # Socket IDs are topics that allow you to identify all sockets for a given user:

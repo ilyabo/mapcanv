@@ -7,6 +7,7 @@ import {ToolbarContainer} from "./toolbar-container";
 import {UndoContainer} from "./undo-container";
 import {useFitBounds} from "./use-fit-bounds";
 import {useGeolocation} from "./use-geolocation";
+import PresenceContainer from "./presence-container";
 
 type Props = {
   mapRef: React.RefObject<MapRef>;
@@ -26,7 +27,10 @@ const MapControlsContainer: FC<Props> = (props) => {
         <UndoContainer />
       </div>
       <div className="absolute flex flex-col gap-1 top-2 right-2 items-end">
-        <ShareContainer />
+        <div className="flex gap-1 items-center">
+          <PresenceContainer />
+          <ShareContainer />
+        </div>
         <ToolbarButton
           isSelected={false}
           tooltipText={"Locate me"}
