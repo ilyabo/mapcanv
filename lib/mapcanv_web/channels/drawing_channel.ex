@@ -82,8 +82,8 @@ defmodule MapCanvWeb.DrawingChannel do
     if map_size(current_presence) == 1 do
       # This was the last user, perform the cleanup
       #cleanup_ydoc(guid)
-      IO.inspect("Cleaning up resources for drawing channel with guid: #{guid}")
-      FeaturesAgent.remove_document(guid)
+      #IO.inspect("Cleaning up resources for drawing channel with guid: #{guid}")
+      #FeaturesAgent.remove_document(guid)
     end
 
     :ok
