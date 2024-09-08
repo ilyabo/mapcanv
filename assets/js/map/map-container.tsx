@@ -19,22 +19,26 @@ import React, {
   useRef,
   useState,
 } from "react";
+import {MapLayerMouseEvent} from "react-map-gl";
 import {
   MapRef,
   Map as ReactMapGl,
   useControl,
+  AttributionControl,
   ViewStateChangeEvent,
 } from "react-map-gl/maplibre";
 import {useAppStore} from "../store/store";
 import {colorToRGBA, findLastLabelLayerId} from "../store/utils";
-import {useDrawHandler} from "./use-draw-handlers";
-
-import {MapLayerMouseEvent} from "react-map-gl";
+import {CursorPresenceOverlay} from "./cursor-presence-overlay";
+import CustomOverlay from "./custom-overlay";
 import MapControlsContainer from "./map-controls-container";
+import {useDrawHandler} from "./use-draw-handlers";
 import {useKeyStrokes} from "./use-key-strokes";
 import {usePanning} from "./use-panning";
-import CustomOverlay from "./custom-overlay";
-import {CursorPresenceOverlay} from "./cursor-presence-overlay";
+import {Button} from "../components/ui/button";
+import {InfoIcon} from "lucide-react";
+import {cn} from "../components/ui/utils";
+import MapInfoIcon from "../components/icons/map-info-icon";
 
 const defaultColor: [number, number, number, number] = [150, 150, 150, 200];
 
@@ -161,8 +165,10 @@ export const MapContainer: FC = () => {
     );
   }
 
+  const [showAttribution, setShowAttribution] = useState(false);
+
   return (
-    <div className="map-container absolute w-[100vw] h-[100vh] top-0 left-0">
+    <div className="map-container absolute inset-0 pb-safe-bottom">
       <ReactMapGl
         ref={mapRef}
         {...mapViewState}
@@ -172,6 +178,7 @@ export const MapContainer: FC = () => {
         onLoad={onMapLoad}
         onMove={handleMove}
         onMouseMove={handleMouseMove}
+        attributionControl={false}
       >
         <DeckGLOverlay
           layers={layers}
@@ -185,6 +192,18 @@ export const MapContainer: FC = () => {
         <CustomOverlay>
           <CursorPresenceOverlay />
         </CustomOverlay>
+        {showAttribution ? (
+          <AttributionControl compact customAttribution="© MapCanv" />
+        ) : (
+          <Button
+            size="icon"
+            variant="ghost"
+            className="absolute bottom-[10px] right-[10px] rounded-full bg-white h-6 w-6"
+            onClick={() => setShowAttribution(true)}
+          >
+            <MapInfoIcon />
+          </Button>
+        )}
       </ReactMapGl>
 
       <MapControlsContainer mapRef={mapRef} />

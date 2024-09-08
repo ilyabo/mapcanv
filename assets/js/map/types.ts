@@ -19,8 +19,8 @@ export const DrawingMode = {
   SELECT: "select",
   SELECT_RECT: "select:rect",
   MOVE: "move",
-  DRAW_LINE: "draw:line",
   DRAW_POLYGON_FREEHAND: "draw:polygon-freehand",
+  DRAW_LINE: "draw:line",
   DRAW_POLYGON: "draw:polygon",
   // DRAW_HEXAGON: "draw:hexagon",
 } as const satisfies Record<string, string>;

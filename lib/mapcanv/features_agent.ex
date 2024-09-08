@@ -42,4 +42,11 @@ defmodule MapCanv.FeaturesAgent do
       end
     end)
   end
+
+  # Removes the Yjs document for the given GUID
+  def remove_document(guid) do
+    Agent.update(__MODULE__, fn state ->
+      Map.delete(state, guid)
+    end)
+  end
 end

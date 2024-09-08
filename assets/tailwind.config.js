@@ -18,6 +18,12 @@ module.exports = {
   ],
   theme: {
     extend: {
+      spacing: {
+        "safe-bottom": "env(safe-area-inset-bottom)",
+        "safe-top": "env(safe-area-inset-top)",
+        "safe-left": "env(safe-area-inset-left)",
+        "safe-right": "env(safe-area-inset-right)",
+      },
       colors: {
         brand: "#FD4F00",
         border: "hsl(var(--border))",
