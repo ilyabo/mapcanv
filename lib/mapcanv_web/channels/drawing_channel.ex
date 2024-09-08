@@ -54,6 +54,21 @@ defmodule MapCanvWeb.DrawingChannel do
     {:noreply, socket}
   end
 
+  # Handle incoming Yjs updates
+  @impl true
+  def handle_in("yjs-update", {:binary, update_binary}, socket) do
+    guid = socket.assigns[:guid]
+
+    # Apply the incoming update and store the new state
+    FeaturesAgent.apply_update(guid, update_binary)
+
+    # Broadcast the Yjs update to all other clients in the channel
+    broadcast_from!(socket, "yjs-update", {:binary, update_binary})
+
+    {:noreply, socket}
+  end
+
+
   @impl true
   def terminate(_reason, socket) do
     guid = socket.assigns.guid
@@ -67,25 +82,10 @@ defmodule MapCanvWeb.DrawingChannel do
     if map_size(current_presence) == 1 do
       # This was the last user, perform the cleanup
       #cleanup_ydoc(guid)
+      IO.inspect("Cleaning up resources for drawing channel with guid: #{guid}")
     end
 
     :ok
-  end
-
-  # Handle incoming Yjs updates
-  @impl true
-  @spec handle_in(<<_::80>>, {:binary, binary()}, Phoenix.Socket.t()) ::
-          {:noreply, Phoenix.Socket.t()}
-  def handle_in("yjs-update", {:binary, update_binary}, socket) do
-    guid = socket.assigns[:guid]
-
-    # Apply the incoming update and store the new state
-    FeaturesAgent.apply_update(guid, update_binary)
-
-    # Broadcast the Yjs update to all other clients in the channel
-    broadcast_from!(socket, "yjs-update", {:binary, update_binary})
-
-    {:noreply, socket}
   end
 
   # # Channels can be used in a request/response fashion
