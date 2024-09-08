@@ -1,17 +1,17 @@
 import {DrawHandlerContext, DrawHandlers, DrawingMode} from "./types";
 
 import {
+  DrawLineStringMode,
+  DrawPolygonByDraggingMode,
   DrawPolygonMode,
   ModifyMode,
-  RotateMode,
   TransformMode,
-  TranslateMode,
   ViewMode,
 } from "@deck.gl-community/editable-layers";
-import {cellToBoundary, latLngToCell} from "h3-js";
-import {useAppStore} from "../store/store";
 import {createId} from "@paralleldrive/cuid2";
-import {useEffect, useState} from "react";
+import {cellToBoundary, latLngToCell} from "h3-js";
+import {useEffect} from "react";
+import {useAppStore} from "../store/store";
 
 const NOOP = () => {};
 const defaultHandlers = {
@@ -39,6 +39,7 @@ const defaultHandlers = {
     console.log({pickingInfos, selectedFeatures});
     appState.setSelectedIds(selectedFeatures);
   },
+  modeConfig: undefined,
 } satisfies Partial<DrawHandlers>;
 
 export function useDrawHandler(context: DrawHandlerContext): DrawHandlers {
@@ -49,8 +50,9 @@ export function useDrawHandler(context: DrawHandlerContext): DrawHandlers {
     [DrawingMode.SELECT]: useSelectHandlers(context),
     [DrawingMode.SELECT_RECT]: useSelectRectHandlers(context),
     [DrawingMode.MOVE]: useMoveHandlers(context),
+    [DrawingMode.DRAW_LINE]: useLineHandlers(context),
     [DrawingMode.DRAW_POLYGON]: usePolygonHandlers(context),
-    [DrawingMode.DRAW_HEXAGON]: useHexagonHandlers(context),
+    [DrawingMode.DRAW_POLYGON_FREEHAND]: usePolygonDraggingHandlers(context),
   } satisfies Record<DrawingMode, DrawHandlers>;
   useEffect(() => {
     const onKeyDown = (evt) =>
@@ -79,7 +81,6 @@ export function useDrawHandler(context: DrawHandlerContext): DrawHandlers {
 function useSelectHandlers(context: DrawHandlerContext): DrawHandlers {
   const selectedIds = useAppStore((state) => state.selectedIds);
   const setSelectedIds = useAppStore((state) => state.setSelectedIds);
-  const addOrUpdateFeatures = useAppStore((state) => state.addOrUpdateFeatures);
   useEffect(() => {
     const onKeyDown = (evt) =>
       evt.key === "Escape" && setSelectedIds(undefined);
@@ -139,6 +140,41 @@ function useMoveHandlers(context: DrawHandlerContext): DrawHandlers {
   };
 }
 
+function useLineHandlers(context: DrawHandlerContext): DrawHandlers {
+  const color = useAppStore((state) => state.color);
+  const addOrUpdateFeatures = useAppStore((state) => state.addOrUpdateFeatures);
+  return {
+    ...defaultHandlers,
+    onEdit: ({updatedData, editType, editContext}) => {
+      switch (editType) {
+        // case "addTentativePosition":  // doesn't have featureIndexes
+        case "addFeature":
+          const {featureIndexes} = editContext;
+          if (featureIndexes && featureIndexes.length > 0) {
+            addOrUpdateFeatures(
+              featureIndexes.map((index) => {
+                const feature = updatedData.features[index];
+                if (feature.id) {
+                  return feature;
+                } else {
+                  // New feature: Add id and color
+                  return {...feature, id: createId(), properties: {color}};
+                }
+              })
+            );
+          }
+          break;
+      }
+    },
+    cursor: "crosshair",
+    editMode: DrawLineStringMode,
+    enableDragPan: false,
+    modeConfig: {
+      formatTooltip: () => "", // Hide the tooltip
+    },
+  };
+}
+
 function usePolygonHandlers(context: DrawHandlerContext): DrawHandlers {
   const color = useAppStore((state) => state.color);
   const addOrUpdateFeatures = useAppStore((state) => state.addOrUpdateFeatures);
@@ -171,30 +207,62 @@ function usePolygonHandlers(context: DrawHandlerContext): DrawHandlers {
   };
 }
 
-function useHexagonHandlers(context: DrawHandlerContext): DrawHandlers {
+function usePolygonDraggingHandlers(context: DrawHandlerContext): DrawHandlers {
   const color = useAppStore((state) => state.color);
-  const hexResolution = useAppStore((state) => state.hexResolution);
   const addOrUpdateFeatures = useAppStore((state) => state.addOrUpdateFeatures);
-  const addHexagon = (event) => {
-    if (!event.coordinate) return;
-    const [lng, lat] = event.coordinate;
-    const h3 = latLngToCell(lat, lng, hexResolution);
-    const boundary = cellToBoundary(h3, true);
-    addOrUpdateFeatures([
-      {
-        id: h3,
-        type: "Feature",
-        geometry: {type: "Polygon", coordinates: [boundary]},
-        properties: {color},
-      },
-    ]);
-  };
   return {
     ...defaultHandlers,
-    onClick: addHexagon,
-    onDrag: addHexagon,
+    onEdit: ({updatedData, editType, editContext}) => {
+      switch (editType) {
+        // case "addTentativePosition":  // doesn't have featureIndexes
+        case "addFeature":
+          const {featureIndexes} = editContext;
+          if (featureIndexes && featureIndexes.length > 0) {
+            addOrUpdateFeatures(
+              featureIndexes.map((index) => {
+                const feature = updatedData.features[index];
+                if (feature.id) {
+                  return feature;
+                } else {
+                  // New feature: Add id and color
+                  return {...feature, id: createId(), properties: {color}};
+                }
+              })
+            );
+          }
+          break;
+      }
+    },
     cursor: "crosshair",
-    editMode: ViewMode,
+    editMode: DrawPolygonByDraggingMode,
     enableDragPan: false,
   };
 }
+
+// function useHexagonHandlers(context: DrawHandlerContext): DrawHandlers {
+//   const color = useAppStore((state) => state.color);
+//   const hexResolution = useAppStore((state) => state.hexResolution);
+//   const addOrUpdateFeatures = useAppStore((state) => state.addOrUpdateFeatures);
+//   const addHexagon = (event) => {
+//     if (!event.coordinate) return;
+//     const [lng, lat] = event.coordinate;
+//     const h3 = latLngToCell(lat, lng, hexResolution);
+//     const boundary = cellToBoundary(h3, true);
+//     addOrUpdateFeatures([
+//       {
+//         id: h3,
+//         type: "Feature",
+//         geometry: {type: "Polygon", coordinates: [boundary]},
+//         properties: {color},
+//       },
+//     ]);
+//   };
+//   return {
+//     ...defaultHandlers,
+//     onClick: addHexagon,
+//     onDrag: addHexagon,
+//     cursor: "crosshair",
+//     editMode: ViewMode,
+//     enableDragPan: false,
+//   };
+// }

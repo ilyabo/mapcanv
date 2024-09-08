@@ -1,6 +1,6 @@
 import React from "react";
 import {createRoot} from "react-dom/client";
-import AppContainer from "./components/app-container";
+import AppContainer from "./app-container";
 const reactAppContainer = document.getElementById("react-app-container");
 const root = createRoot(reactAppContainer);
 root.render(<AppContainer />);

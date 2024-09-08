@@ -1,9 +1,9 @@
 import React, {FC} from "react";
 import {useAppStore} from "../store/store";
-import {ToolbarButton} from "./toolbar-button";
+import {ToolbarButton} from "../components/toolbar-button";
 import {Redo2Icon, Undo2Icon} from "lucide-react";
 type Props = {};
-const UndoContainer: FC<Props> = (props) => {
+export const UndoContainer: FC<Props> = (props) => {
   const undo = useAppStore((state) => state.undo);
   const redo = useAppStore((state) => state.redo);
   return (
@@ -13,5 +13,3 @@ const UndoContainer: FC<Props> = (props) => {
     </div>
   );
 };
-
-export default UndoContainer;

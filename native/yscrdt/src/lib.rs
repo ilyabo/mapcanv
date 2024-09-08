@@ -10,7 +10,6 @@ struct Crdt {
 impl Crdt {
     fn new() -> Self {
         let doc = Doc::new();
-        doc.get_or_insert_map("features");
         Crdt { doc }
     }
 
@@ -19,7 +18,6 @@ impl Crdt {
      */
     fn from_bytes(bytes: &[u8]) -> Self {
         let doc = Doc::new();
-        doc.get_or_insert_map("features");
         let update_result = Update::decode_v1(bytes);
         match update_result {
             Ok(update) => {

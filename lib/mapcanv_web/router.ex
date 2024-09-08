@@ -18,6 +18,7 @@ defmodule MapCanvWeb.Router do
     pipe_through :browser
 
     get "/", PageController, :home
+    get "/:guid", PageController, :home
   end
 
   # Other scopes may use custom stacks.

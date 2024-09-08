@@ -9,7 +9,11 @@ import {
   MapboxOverlay as DeckOverlay,
   MapboxOverlayProps,
 } from "@deck.gl/mapbox";
-import {MapRef, Map as ReactMapGl} from "react-map-gl/maplibre";
+import {
+  MapRef,
+  Map as ReactMapGl,
+  ViewStateChangeEvent,
+} from "react-map-gl/maplibre";
 
 import {Map} from "maplibre-gl";
 import React, {
@@ -21,25 +25,18 @@ import React, {
   useState,
 } from "react";
 import {useControl} from "react-map-gl/maplibre";
-import {useDrawHandler} from "../drawing/use-draw-handlers";
 import {useAppStore} from "../store/store";
 import {colorToRGBA, findLastLabelLayerId} from "../store/utils";
-import {useKeyStrokes} from "../drawing/use-key-strokes";
-import {usePanning} from "../drawing/use-panning";
+import {useDrawHandler} from "./use-draw-handlers";
+
+import MapControlsContainer from "./map-controls-container";
+import {useKeyStrokes} from "./use-key-strokes";
+import {usePanning} from "./use-panning";
 
 const defaultColor: [number, number, number, number] = [150, 150, 150, 200];
 
 const MAP_STYLE =
   "https://basemaps.cartocdn.com/gl/positron-gl-style/style.json";
-
-const INITIAL_VIEW_STATE = {
-  latitude: 37.77712591285937,
-  longitude: -122.44379091041898,
-  zoom: 12,
-  bearing: 0,
-  pitch: 0,
-  minZoom: 1.5,
-};
 
 const EDITABLE_FEATURES_LAYER_ID = "editable-geojson-layer";
 const SELECTION_LAYER_ID = "selection";
@@ -60,11 +57,18 @@ function DeckGLOverlay(props: MapboxOverlayProps): null {
   return null;
 }
 
-export const MapView: FC = () => {
+export const MapContainer: FC = () => {
   const features = useAppStore((state) => state.features);
   const selectedIds = useAppStore((state) => state.selectedIds);
   const mapRef = useRef<MapRef>(null);
   const [beforeId, setBeforeId] = useState();
+
+  const mapViewState = useAppStore((state) => state.mapViewState);
+  const setMapViewState = useAppStore((state) => state.setMapViewState);
+
+  const handleMove = useCallback((evt: ViewStateChangeEvent) => {
+    setMapViewState(evt.viewState);
+  }, []);
 
   useKeyStrokes();
   usePanning();
@@ -92,8 +96,6 @@ export const MapView: FC = () => {
     [features]
   );
 
-  // console.log("features", features);
-
   const selectedFeatureIndexes = useMemo(
     () =>
       selectedIds
@@ -114,6 +116,7 @@ export const MapView: FC = () => {
       // @ts-ignore
       beforeId, // ensure the layer is rendered before the label layers
       onEdit: drawHandlers.onEdit,
+      modeConfig: drawHandlers.modeConfig,
 
       getFillColor: (f) =>
         f.properties.color ? colorToRGBA(f.properties.color) : defaultColor,
@@ -121,7 +124,11 @@ export const MapView: FC = () => {
       filled: true,
       lineWidthUnits: "pixels",
       getLineWidth: (f) =>
-        selectedIds?.includes(f.id) ? SELECTION_LINE_WIDTH : 1,
+        selectedIds?.includes(f.id)
+          ? SELECTION_LINE_WIDTH
+          : f.geometry.type === "LineString"
+          ? 3
+          : 1,
       getLineColor: (f) =>
         selectedIds?.includes(f.id)
           ? SELECTION_STROKE_COLOR
@@ -146,23 +153,28 @@ export const MapView: FC = () => {
   }
 
   return (
-    <ReactMapGl
-      ref={mapRef}
-      initialViewState={INITIAL_VIEW_STATE}
-      mapStyle={MAP_STYLE}
-      antialias
-      cursor="default"
-      onLoad={onMapLoad}
-    >
-      <DeckGLOverlay
-        layers={layers}
-        getCursor={() => drawHandlers.cursor}
-        onClick={drawHandlers.onClick}
-        onDrag={drawHandlers.onDrag}
-        onDragStart={drawHandlers.onDragStart}
-        onDragEnd={drawHandlers.onDragEnd}
-        interleaved
-      />
-    </ReactMapGl>
+    <div className="map-container absolute w-[100vw] h-[100vh] top-0 left-0">
+      <ReactMapGl
+        ref={mapRef}
+        {...mapViewState}
+        mapStyle={MAP_STYLE}
+        antialias
+        cursor="default"
+        onLoad={onMapLoad}
+        onMove={handleMove}
+      >
+        <DeckGLOverlay
+          layers={layers}
+          getCursor={() => drawHandlers.cursor}
+          onClick={drawHandlers.onClick}
+          onDrag={drawHandlers.onDrag}
+          onDragStart={drawHandlers.onDragStart}
+          onDragEnd={drawHandlers.onDragEnd}
+          interleaved
+        />
+      </ReactMapGl>
+
+      <MapControlsContainer mapRef={mapRef} />
+    </div>
   );
 };

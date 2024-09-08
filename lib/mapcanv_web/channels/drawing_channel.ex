@@ -3,15 +3,24 @@ defmodule MapCanvWeb.DrawingChannel do
   alias MapCanv.FeaturesAgent
 
   @impl true
-  def join("drawing:lobby", _payload, socket) do
-    current_state = FeaturesAgent.get_state()
+  def join("drawing:" <> guid, {:binary, state_binary}, socket) do
+    IO.inspect("Joining drawing channel with guid: #{guid}")
+
+    FeaturesAgent.apply_update(guid, state_binary)
+    current_state = FeaturesAgent.get_state(guid)
+
+    # Store the GUID in the socket assigns
+    socket = assign(socket, :guid, guid)
+
     {:ok, {:binary, current_state}, socket}
   end
 
   @impl true
   def handle_in("yjs-update", {:binary, update_binary}, socket) do
+    guid = socket.assigns[:guid]
+
     # Apply the incoming update and store the new state
-    FeaturesAgent.apply_update(update_binary)
+    FeaturesAgent.apply_update(guid, update_binary)
 
     # Broadcast the Yjs update to all other clients in the channel
     broadcast_from!(socket, "yjs-update", {:binary, update_binary})

@@ -3,31 +3,43 @@ defmodule MapCanv.FeaturesAgent do
 
   alias YsCrdt
 
-  # Starts the Agent with an initial state of `nil`
+  # Starts the Agent with an initial state of an empty map
   def start_link(_) do
-    Agent.start_link(fn -> nil end, name: __MODULE__)
+    Agent.start_link(fn -> %{} end, name: __MODULE__)
   end
 
-  # Gets the current state
-  # Gets the current state, initializing a new document if the state is nil
-  def get_state() do
-    Agent.get_and_update(__MODULE__, fn
-      nil ->
-        new_doc = YsCrdt.new_doc()
-        {new_doc, new_doc}
-      state ->
-        {state, state}
-    end)
-  end
-
-  # Applies an update to the current state
-  def apply_update(update) when is_binary(update) do
+  # Gets the document state for a specific GUID
+  # Initializes a new document if no document exists for the GUID
+  def get_state(guid) do
     Agent.get_and_update(__MODULE__, fn state ->
-      new_state = YsCrdt.merge_crdt(state, update)
-      # The first element of the tuple is what get_and_update/2 will return as the result of the operation.
-	    # The second element of the tuple is the new state of the agent.
-      {new_state, new_state}
+      case Map.get(state, guid) do
+        nil ->
+          # No document exists for this GUID, so create a new one
+          new_doc = YsCrdt.new_doc()
+          {new_doc, Map.put(state, guid, new_doc)}
+
+        doc ->
+          # Return the existing document
+          {doc, state}
+      end
     end)
   end
 
+  # Applies an update to the document associated with a specific GUID
+  def apply_update(guid, update) when is_binary(update) do
+    Agent.get_and_update(__MODULE__, fn state ->
+      case Map.get(state, guid) do
+        nil ->
+          # If no document exists, create a new one and apply the update
+          new_doc = YsCrdt.new_doc()
+          updated_doc = YsCrdt.merge_crdt(new_doc, update)
+          {updated_doc, Map.put(state, guid, updated_doc)}
+
+        doc ->
+          # Apply the update to the existing document
+          updated_doc = YsCrdt.merge_crdt(doc, update)
+          {updated_doc, Map.put(state, guid, updated_doc)}
+      end
+    end)
+  end
 end

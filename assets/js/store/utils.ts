@@ -1,4 +1,4 @@
-import {rgb} from 'd3';
+import {rgb} from "d3";
 
 export const colorToRGBA = (
   color,
@@ -19,11 +19,15 @@ export function findLastLabelLayerId(style) {
     return undefined;
   }
   let i = layers.length - 1;
-  while (i >= 0 && layers[i].type === 'symbol') {
+  while (i >= 0 && layers[i].type === "symbol") {
     i--;
   }
   if (i >= 0) {
     return layers[i + 1].id;
   }
   return undefined;
+}
+
+export function isValudGuid(guid: string | undefined) {
+  return guid && /^[a-z0-9]{24}$/.test(guid);
 }
