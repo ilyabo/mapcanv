@@ -20,6 +20,19 @@ if System.get_env("PHX_SERVER") do
   config :mapcanv, MapCanvWeb.Endpoint, server: true
 end
 
+config :ex_aws,
+  access_key_id: System.get_env("S3_ACCESS_KEY_ID"),
+  secret_access_key: System.get_env("S3_SECRET_ACCESS_KEY"),
+  s3: [
+    scheme: "https://",
+    host: System.get_env("S3_ENDPOINT"),
+    region: "auto"
+  ]
+
+IO.puts("Runtime.exs inspect…")
+IO.inspect(System.get_env("S3_SECRET_ACCESS_KEY"))
+IO.inspect(Application.get_all_env(:ex_aws))
+
 if config_env() == :prod do
   # The secret key base is used to sign/encrypt cookies and other secrets.
   # A default value is used in config/dev.exs and config/test.exs but you

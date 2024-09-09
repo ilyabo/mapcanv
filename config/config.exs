@@ -21,6 +21,7 @@ config :mapcanv, MapCanvWeb.Endpoint,
   pubsub_server: MapCanv.PubSub,
   live_view: [signing_salt: "U4/2nfRM"]
 
+
 # Configures the mailer
 #
 # By default it uses the "Local" adapter which stores the emails

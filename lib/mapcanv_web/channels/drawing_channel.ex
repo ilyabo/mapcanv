@@ -2,6 +2,7 @@ defmodule MapCanvWeb.DrawingChannel do
   use MapCanvWeb, :channel
   alias MapCanv.FeaturesAgent
   alias MapCanvWeb.Presence
+  alias ExAws.S3
 
   @impl true
   def join("drawing:" <> guid, %{"userName" => user_name, "userColor" => user_color}, socket) do
@@ -90,14 +91,51 @@ defmodule MapCanvWeb.DrawingChannel do
 
     # If no more users are present for this GUID, clean up resources
     if map_size(current_presence) == 1 do
-      # This was the last user, perform the cleanup
-      #cleanup_ydoc(guid)
+      # This was the last user, perform save and cleanup
+
+      IO.inspect("Saving drawing channel with guid: #{guid}")
+      ydoc = FeaturesAgent.get_state(guid)
+
+      # Save the Yjs document to S3 (Cloudflare R2)
+      save_document_to_s3(guid, ydoc)
+
       #IO.inspect("Cleaning up resources for drawing channel with guid: #{guid}")
       #FeaturesAgent.remove_document(guid)
     end
 
     :ok
   end
+
+  defp save_document_to_s3(guid, ydoc) do
+    bucket_name = System.get_env("S3_BUCKET_NAME")
+    key = "#{guid}/features.yjs"
+    # serialized_data = Y.encodeStateAsUpdate(ydoc)
+    serialized_data = ydoc
+
+    # Upload the Yjs document to the S3 bucket
+    {:ok, _} = serialized_data
+               |> S3.put_object(bucket_name, key)
+               |> ExAws.request()
+
+    IO.inspect("Document saved to S3 with key: #{key}")
+  end
+
+  # defp load_document_from_s3(guid) do
+  #   bucket_name = System.get_env("S3_BUCKET_NAME")
+  #   key = "#{guid}/features.yjs"
+
+  #   # Fetch the document from S3
+  #   case S3.get_object(bucket_name, key) |> ExAws.request() do
+  #     {:ok, %{body: body}} ->
+  #       # Deserialize the Yjs document
+  #       IO.inspect("Loaded document from S3 with key: #{key}")
+  #       Y.applyUpdate(Y.new_doc(), body)
+
+  #     {:error, _reason} ->
+  #       IO.inspect("Document not found in S3 for key: #{key}")
+  #       Y.new_doc()  # If not found, create a new document
+  #   end
+  # end
 
   # # Channels can be used in a request/response fashion
   # # by sending replies to requests from the client

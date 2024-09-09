@@ -56,6 +56,11 @@ defmodule MapCanv.MixProject do
       {:dns_cluster, "~> 0.1.1"},
       {:bandit, "~> 1.2"},
       {:rustler, "~> 0.34.0"},
+      {:ex_aws, "~> 2.1"},
+      {:ex_aws_s3, "~> 2.1"},
+      {:hackney, "~> 1.17"},
+      {:sweet_xml, "~> 0.6"},
+      {:dotenv, "~> 3.0.0", only: [:dev, :test]},
     ]
   end
 

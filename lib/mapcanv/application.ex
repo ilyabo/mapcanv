@@ -7,6 +7,11 @@ defmodule MapCanv.Application do
 
   @impl true
   def start(_type, _args) do
+    unless Mix.env == :prod do
+      Dotenv.load
+      Mix.Task.run("loadconfig")
+    end
+
     children = [
       MapCanvWeb.Telemetry,
       {DNSCluster, query: Application.get_env(:mapcanv, :dns_cluster_query) || :ignore},
