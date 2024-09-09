@@ -17,6 +17,12 @@ defmodule MapCanvWeb.DrawingChannel do
     # Track the user's presence for the specific GUID
     send(self(), {:after_join, user_name, user_color})
 
+    # TODO Now that you’ve broadcast the message across the PubSub system,
+    # you need to subscribe to that topic in your channel when the client joins,
+    #  so other instances will handle the update and broadcast it to their own local clients.
+    # Subscribe to the topic for this drawing session
+    #Phoenix.PubSub.subscribe(MyApp.PubSub, "yjs-update:#{guid}")
+
     {:ok, {:binary, current_state}, socket}
   end
 
@@ -64,6 +70,10 @@ defmodule MapCanvWeb.DrawingChannel do
 
     # Broadcast the Yjs update to all other clients in the channel
     broadcast_from!(socket, "yjs-update", {:binary, update_binary})
+
+    # TODO: broadcast_from only sends the message to the current node, so we need to
+    # Publish the message to the PubSub system so all instances will receive it
+    #Phoenix.PubSub.broadcast(MyApp.PubSub, "yjs-update:#{guid}", {:binary, update_binary})
 
     {:noreply, socket}
   end
