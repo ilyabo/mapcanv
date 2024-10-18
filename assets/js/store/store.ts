@@ -69,7 +69,7 @@ export const useAppStore = create<DrawingState>((set, get) => {
   function initYDoc(guid = LOCAL_DOCUMENT_GUID) {
     const ydoc = new Y.Doc({guid});
     const yfeatures = getYFeatures(ydoc);
-    const yfeaturesUndo = new Y.UndoManager(yfeatures);
+    const yfeaturesUndo = new Y.UndoManager([yfeatures]);
     const indexedDbProvider = new IndexeddbPersistence(guid, ydoc);
     yfeatures.observe(syncFeatures);
     indexedDbProvider.on("synced", syncFeatures);
@@ -150,8 +150,7 @@ export const useAppStore = create<DrawingState>((set, get) => {
             console.log("Joined successfully");
             if (resp) {
               const initialState = new Uint8Array(resp);
-              yfeaturesUndo.stopCapturing(); // Don't add the initial state to the undo manager
-              Y.applyUpdate(ydoc, initialState); // Apply the initial state to the Yjs document
+              Y.applyUpdate(ydoc, initialState, 'initial-sync');  // Use custom origin to exclude from undo/redo
             } else {
               console.log("No initial state");
             }
