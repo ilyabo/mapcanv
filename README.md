@@ -2,6 +2,10 @@
 
 A collaborative map drawing app built using the [Phoenix Framework](https://phoenixframework.org/) and [deck.gl](http://deck.gl).
 
+Talk recording: [Real-time collaborative map drawing with deck.gl](https://youtu.be/feMRman7iSo) at the Open Visualization summit London, 2024
+
+
+
 [TRY LIVE](https://mapcanv.com)
 
 <img width="600" alt="image" src="https://github.com/user-attachments/assets/f38b4c5b-4194-4d53-b782-d47144f5b3fc">
