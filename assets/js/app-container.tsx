@@ -1,20 +1,19 @@
-import React, {useEffect} from "react";
-import {TooltipProvider} from "./components/ui/tooltip";
-import {MapContainer} from "./map/map-container";
-import {useAppStore} from "./store/store";
-import {isValudGuid} from "./store/utils";
+import React from 'react';
+import {TooltipProvider} from './components/ui/tooltip';
+import {MapContainer} from './map/map-container';
+import {AppStoreProvider} from './store/AppStoreProvider';
+import {isValudGuid} from './store/utils';
 
 const AppContainer: React.FC = () => {
-  const init = useAppStore((state) => state.initProject);
-  useEffect(() => {
-    const guid = location.pathname.split("/").pop();
-    init(isValudGuid(guid) ? guid : undefined);
-  }, [init]);
+  const guid = location.pathname.split('/').pop();
+  const initialGuid = isValudGuid(guid) ? guid : undefined;
 
   return (
-    <TooltipProvider>
-      <MapContainer />
-    </TooltipProvider>
+    <AppStoreProvider initialGuid={initialGuid}>
+      <TooltipProvider>
+        <MapContainer />
+      </TooltipProvider>
+    </AppStoreProvider>
   );
 };
 
